@@ -1,6 +1,7 @@
 #ifndef __OBJECT_INCLUDED
 #define __OBJECT_INCLUDED
 
+#include "list.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -36,25 +37,24 @@ typedef struct {
 
 typedef struct {
     enum DataType datatype;
-    int32_t length;
-    void* values;
+    List* values;
 } Vector;
 
-typedef struct {
+/*typedef struct {
     uint16_t count;
-    Tag* tags;
-} Container;
+    List* tags;
+} Container;*/
 
 typedef struct event {
     uint8_t version;
     uint64_t timestamp;
     uint8_t UUID[16];
-    Container payload;
+    List* payload;
 } Event;
 
 uint64_t generate_current_timestamp();
 void generate_uuid_v4(uint8_t* uuid);
-//Event* create_event(uint8_t version, uint64_t timestamp, uint8_t* uuid);
-//Event* create_event(uint64_t timestamp, uint8_t* uuid);
+Event* event_create(uint8_t version, uint64_t timestamp, uint8_t* uuid);
+void event_free();
 Event* create_event();
 #endif
