@@ -44,7 +44,9 @@ void list_delete_latest(List* list){
     if(list->size > 0){
         List_element* latest = list_get_latest(list);
         free(latest->value);
-        latest->previous->next = NULL;
+        if(latest->previous != NULL){
+            latest->previous->next = NULL;
+        }
         list->size--;
         free(latest);
         if(list->size == 0){
