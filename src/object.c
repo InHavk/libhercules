@@ -29,18 +29,18 @@ uint64_t generate_current_timestamp() {
     return timestamp;
 }
 
-Event* create_event(uint8_t version, uint64_t timestamp, uint8_t* uuid) {
+//Event* create_event(uint8_t version, uint64_t timestamp, uint8_t* uuid) {
 
-}
+//}
 
-Event* create_event(uint64_t timestamp, uint8_t* uuid) {
-    return create_event(0x01, timestamp, uuid);
-}
+//Event* create_event(uint64_t timestamp, uint8_t* uuid) {
+//    return create_event(0x01, timestamp, uuid);
+//}
 
 Event* create_event() {
     uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
     generate_uuid_v4(uuid);
-    Event* event = create_event(0x01, generate_current_timestamp(), uuid);
+    Event* event;// = create_event(0x01, generate_current_timestamp(), uuid);
     free(uuid);
     return event;
 }

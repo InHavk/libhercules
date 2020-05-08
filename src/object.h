@@ -51,4 +51,10 @@ typedef struct event {
     uint8_t UUID[16];
     Container payload;
 } Event;
+
+uint64_t generate_current_timestamp();
+void generate_uuid_v4(uint8_t* uuid);
+//Event* create_event(uint8_t version, uint64_t timestamp, uint8_t* uuid);
+//Event* create_event(uint64_t timestamp, uint8_t* uuid);
+Event* create_event();
 #endif
