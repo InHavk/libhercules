@@ -6,7 +6,7 @@ TARGET_EXTENSION=out
 .PHONY: clean
 .PHONY: test
 
-PATHU = unity/src/
+PATHU = libs/unity/src/
 PATHS = src/
 PATHT = test/
 PATHL = libs/
