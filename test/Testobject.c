@@ -14,7 +14,7 @@ void test_nanoseconds_in_timestamp(void){
     uint64_t timestamp = generate_current_timestamp();
     struct timespec* t = malloc(sizeof(struct timespec));
     clock_gettime(CLOCK_REALTIME, t);
-    TEST_ASSERT(t->tv_nsec / 100 >= timestamp % 10000000);
+    TEST_ASSERT_GREATER_OR_EQUAL_INT64(timestamp % 10000000, t->tv_nsec / 100);
     free(t);
 }
 
