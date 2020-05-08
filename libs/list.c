@@ -1,5 +1,6 @@
 // MIT License (see LICENSE file)
 #include "list.h"
+#include <stdlib.h>
 
 List* list_create(){
     List* list = malloc(sizeof(List));

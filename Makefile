@@ -9,6 +9,7 @@ TARGET_EXTENSION=out
 PATHU = unity/src/
 PATHS = src/
 PATHT = test/
+PATHL = libs/
 PATHB = build/
 PATHD = build/depends/
 PATHO = build/objs/
@@ -21,7 +22,7 @@ SRCT = $(wildcard $(PATHT)*.c)
 COMPILE=gcc -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
-CFLAGS=-I. -I$(PATHU) -I$(PATHS) -DTEST
+CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST
 
 RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT) )
 
@@ -41,7 +42,7 @@ test: $(BUILD_PATHS) $(RESULTS)
 $(PATHR)Test%.txt: $(PATHB)%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
 
-$(PATHB)%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o #$(PATHD)Test%.d
+$(PATHB)%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o $(wildcard $(PATHD)*.o) #$(PATHD)Test%.d
 	$(LINK) -o $@ $^
 
 $(PATHO)%.o:: $(PATHT)%.c
@@ -51,6 +52,9 @@ $(PATHO)%.o:: $(PATHS)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
 $(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
+	$(COMPILE) $(CFLAGS) $< -o $@
+
+$(PATHD)%.o:: $(PATHL)%.c
 	$(COMPILE) $(CFLAGS) $< -o $@
 
 $(PATHD)%.d:: $(PATHT)%.c

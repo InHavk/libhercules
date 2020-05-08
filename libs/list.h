@@ -2,7 +2,6 @@
 #ifndef __LIST_INCLUDED
 #define __LIST_INCLUDED
 #include <stddef.h>
-#include <stdlib.h>
 
 typedef struct list_element {
     struct list_element* previous;
