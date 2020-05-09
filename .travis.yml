@@ -1,0 +1,10 @@
+dist: bionic
+
+language: c
+
+os: linux
+
+script:
+  - cmake .
+  - make
+  - ./bin/test_list_app
