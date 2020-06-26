@@ -3,8 +3,8 @@ CLEANUP = rm -f
 MKDIR = mkdir -p
 TARGET_EXTENSION=out
 
-.PHONY: clean
-.PHONY: test
+.PHONY: all
+all: clean test so
 
 PATHU = libs/unity/src/
 PATHS = src/
@@ -15,14 +15,12 @@ PATHD = build/depends/
 PATHO = build/objs/
 PATHR = build/results/
 
-#BUILD_PATHS = $(MKDIR) $(PATHB) $(PATHD) $(PATHO) $(PATHR)
-
 SRCT = $(wildcard $(PATHT)*.c)
 
 COMPILE=gcc -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
-CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST
+CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST -fPIC
 
 RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT) )
 
@@ -42,7 +40,7 @@ test: $(BUILD_PATHS) $(RESULTS)
 $(PATHR)Test%.txt: $(PATHB)%.$(TARGET_EXTENSION)
 	-./$< > $@ 2>&1
 
-$(PATHB)%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o $(wildcard $(PATHD)*.o) #$(PATHD)Test%.d
+$(PATHB)%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o $(PATHL)list.o #$(wildcard $(PATHD)*.o) #$(PATHD)Test%.d
 	$(LINK) -o $@ $^
 
 $(PATHO)%.o:: $(PATHT)%.c
@@ -68,6 +66,11 @@ clean:
 	$(CLEANUP) $(PATHB)*.$(TARGET_EXTENSION)
 	$(CLEANUP) $(PATHR)*.txt
 	$(CLEANUP) $(PATHU)unity.o
+	$(CLEANUP) $(PATHB)*.so
+	$(CLEANUP) $(PATHD)*.d
+
+so:
+	$(LINK) $(wildcard $(PATHD)%.o) $(PATHO)libhercules.o -shared -o build/libhercules.so
 
 .PRECIOUS: $(PATHB)Test%.$(TARGET_EXTENSION)
 .PRECIOUS: $(PATHD)%.d
