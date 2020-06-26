@@ -68,6 +68,7 @@ clean:
 	$(CLEANUP) $(PATHU)unity.o
 	$(CLEANUP) $(PATHB)*.so
 	$(CLEANUP) $(PATHD)*.d
+	$(CLEANUP) $(PATHD)*.o
 
 so:
 	$(LINK) $(wildcard $(PATHD)%.o) $(PATHO)libhercules.o -shared -o build/libhercules.so
