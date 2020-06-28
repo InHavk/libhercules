@@ -4,7 +4,7 @@ MKDIR = mkdir -p
 TARGET_EXTENSION=out
 
 .PHONY: all
-all: clean test so
+all: clean BUILD_PATHS test so
 
 PATHU = libs/unity/src/
 PATHS = src/
@@ -71,7 +71,12 @@ clean:
 	$(CLEANUP) $(PATHD)*.o
 
 so:
-	$(LINK) $(wildcard $(PATHD)%.o) $(PATHO)libhercules.o -shared -o build/libhercules.so
+	$(LINK) libs/list.o $(PATHO)libhercules.o -shared -o build/libhercules.so
+
+static:	$(PATHB)libhercules.a
+
+$(PATHB)libhercules.a: libs/list.o $(PATHO)libhercules.o
+	ar rcs $@ $^
 
 .PRECIOUS: $(PATHB)Test%.$(TARGET_EXTENSION)
 .PRECIOUS: $(PATHD)%.d
