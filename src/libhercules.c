@@ -186,7 +186,7 @@ Tag* container_find_tag(List* list, int8_t key_length, char* key_name){
     }
 }
 
-void container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value){
+Tag* container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = BYTE;
     tag->key.length = key_length;
@@ -194,9 +194,10 @@ void container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8
     tag->value = malloc(sizeof(uint8_t));
     *((uint8_t*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value){
+Tag* container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = SHORT;
     tag->key.length = key_length;
@@ -204,9 +205,10 @@ void container_add_tag_Short(List* list, int8_t key_length, char* key_name, int1
     tag->value = malloc(sizeof(int16_t));
     *((int16_t*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value){
+Tag* container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = INTEGER;
     tag->key.length = key_length;
@@ -214,9 +216,10 @@ void container_add_tag_Integer(List* list, int8_t key_length, char* key_name, in
     tag->value = malloc(sizeof(int32_t));
     *((int32_t*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value){
+Tag* container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = LONG;
     tag->key.length = key_length;
@@ -224,9 +227,10 @@ void container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64
     tag->value = malloc(sizeof(int64_t));
     *((int64_t*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value){
+Tag* container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLAG;
     tag->key.length = key_length;
@@ -234,9 +238,10 @@ void container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char 
     tag->value = malloc(sizeof(char));
     *((char*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value){
+Tag* container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLOAT;
     tag->key.length = key_length;
@@ -244,9 +249,10 @@ void container_add_tag_Float(List* list, int8_t key_length, char* key_name, floa
     tag->value = malloc(sizeof(float));
     *((float*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value){
+Tag* container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = DOUBLE;
     tag->key.length = key_length;
@@ -254,9 +260,10 @@ void container_add_tag_Double(List* list, int8_t key_length, char* key_name, dou
     tag->value = malloc(sizeof(double));
     *((double*) tag->value) = value;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value){
+Tag* container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = STRING;
     tag->key.length = key_length;
@@ -265,9 +272,10 @@ void container_add_tag_String(List* list, int8_t key_length, char* key_name, cha
     tag->value = malloc(sizeof(char) * (size_of_value + 1));
     strcpy(tag->value, value);
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value){
+Tag* container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = UUID;
     tag->key.length = key_length;
@@ -275,18 +283,20 @@ void container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8
     tag->value = malloc(sizeof(uint8_t) * 16);
     memcpy((uint8_t*) tag->value, value, 16);
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Null(List* list, int8_t key_length, char* key_name){
+Tag* container_add_tag_Null(List* list, int8_t key_length, char* key_name){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = NULL_TYPE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(void));
+    tag->value = NULL;
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name){
+Tag* container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = VECTOR;
     tag->key.length = key_length;
@@ -295,20 +305,22 @@ void container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_len
     ((Vector*) tag->value)->datatype = datatype;
     ((Vector*) tag->value)->values = list_create();
     list_append(list, tag);
+    return tag;
 }
 
-void container_add_tag_Container(List* list, int8_t key_length, char* key_name){
+Tag* container_add_tag_Container(List* list, int8_t key_length, char* key_name){
     Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = CONTAINER;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
     tag->value = list_create();
     list_append(list, tag);
+    return tag;
 }
 
 char* event_to_bin(Event* event, size_t* binary_size){
     size_t* binary_max_size = malloc(sizeof(size_t));
-    *binary_max_size = 1024 * 4;
+    *binary_max_size = 1024 * 8;
     char* binary_string = malloc(sizeof(char) * *binary_max_size);
     *binary_size = 0;
     // Version
@@ -523,14 +535,16 @@ void vector_add_UUID(Vector* vector, uint8_t* value){
     list_append(vector->values, v_uuid);
 }
 
-void vector_add_Vector(Vector* vector, enum DataType datatype){
+Vector* vector_add_Vector(Vector* vector, enum DataType datatype){
     Vector* v_vector = malloc(sizeof(Vector));
     v_vector->datatype = datatype;
     v_vector->values = list_create();
     list_append(vector->values, v_vector);
+    return v_vector;
 }
 
-void vector_add_Container(Vector* vector){
+List* vector_add_Container(Vector* vector){
     List* v_container = list_create();
     list_append(vector->values, v_container);
+    return v_container;
 }

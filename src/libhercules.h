@@ -23,7 +23,7 @@
 #define tag_get_Container(tag) ((List*) tag->value)
 
 #define try_realloc_binary_string(size, binary_string, binary_size, binary_max_size) \
-  if(*binary_max_size - *binary_size < size){\
+  if(*binary_max_size - *binary_size < (size_t) size){\
     *binary_max_size *= 2; \
     binary_string = realloc(binary_string, *binary_max_size); \
   }
@@ -57,7 +57,7 @@
 
 #define pack_be_uint8_array(value, size, binary_string, binary_size, binary_max_size) \
   try_realloc_binary_string(size, binary_string, binary_size, binary_max_size);\
-  for(size_t i = 0; i < size; ++i){\
+  for(size_t i = 0; i < (size_t) size; ++i){\
     binary_string[(*binary_size)++] = value[i];\
   }
 
@@ -108,18 +108,18 @@ void container_free(List* container);
 void vector_free(Vector* vector);
 Event* create_event();
 Tag* container_find_tag(List* list, int8_t key_length, char* key_name);
-void container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value);
-void container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value);
-void container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value);
-void container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value);
-void container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value);
-void container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value);
-void container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value);
-void container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value);
-void container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value);
-void container_add_tag_Null(List* list, int8_t key_length, char* key_name);
-void container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name);
-void container_add_tag_Container(List* list, int8_t key_length, char* key_name);
+Tag* container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value);
+Tag* container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value);
+Tag* container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value);
+Tag* container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value);
+Tag* container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value);
+Tag* container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value);
+Tag* container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value);
+Tag* container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value);
+Tag* container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value);
+Tag* container_add_tag_Null(List* list, int8_t key_length, char* key_name);
+Tag* container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name);
+Tag* container_add_tag_Container(List* list, int8_t key_length, char* key_name);
 char* event_to_bin(Event* event, size_t* binary_size);
 char* container_to_bin(List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size);
 char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size);
@@ -132,6 +132,6 @@ void vector_add_Float(Vector* vector, float value);
 void vector_add_Double(Vector* vector, double value);
 void vector_add_String(Vector* vector, char* value);
 void vector_add_UUID(Vector* vector, uint8_t* value);
-void vector_add_Vector(Vector* vector, enum DataType datatype);
-void vector_add_Container(Vector* vector);
+Vector* vector_add_Vector(Vector* vector, enum DataType datatype);
+List* vector_add_Container(Vector* vector);
 #endif

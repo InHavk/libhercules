@@ -17,7 +17,7 @@ PATHR = build/results/
 
 SRCT = $(wildcard $(PATHT)*.c)
 
-COMPILE=gcc -c
+COMPILE=gcc -g -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
 CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST -fPIC
