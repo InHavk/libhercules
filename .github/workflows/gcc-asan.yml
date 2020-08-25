@@ -1,0 +1,30 @@
+
+name: test
+
+on: [push]
+
+jobs:
+  gcc:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: submodules     
+      run: |
+        git submodule update --init --recursive
+    - name: prerequisuites 
+      run: |
+        sudo apt-get update -y
+        sudo apt install -y libasan6
+    - name: build
+      run: |
+        export ASAN_OPTIONS="log_path=asan.log"
+        make COMPILE="gcc -fsanitize=address -g -c" LINK="gcc -fsanitize=address -lasan"
+    - name: check for asan log
+      run: |
+        if ls asan.log* 1> /dev/null 2>&1; then
+           cat cat asan.log*
+           exit 1
+        fi
+
