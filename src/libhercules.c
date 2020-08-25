@@ -387,8 +387,8 @@ char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, si
                 pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
                 break;
             case LONG:
-                be_integer = htobe32(tag_get_Integer(el));
-                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                be_long = htobe64(tag_get_Long(el));
+                pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
                 break;
             case FLAG:
                 flag = tag_get_Flag(el);
@@ -410,6 +410,7 @@ char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, si
                 break;
             case UUID:
                 pack_be_uint8_array(tag_get_UUID(el), 16, binary_string, binary_size, binary_max_size);
+                break;
             case VECTOR:
                 be_vector = tag_get_Vector(el);
                 pack_be_uint8(be_vector->datatype, binary_string, binary_size, binary_max_size);
