@@ -298,65 +298,64 @@ char* container_to_bin(List* container, char* binary_string, size_t* binary_size
         // Datatype
         pack_be_uint8(tag->datatype, binary_string, binary_size, binary_max_size);
         // Value
-        if(tag->datatype == BYTE){
-            pack_be_uint8(tag_get_Byte(tag), binary_string, binary_size, binary_max_size);
-            goto next_tag;
+        int16_t be_short;
+        int32_t be_integer;
+        int64_t be_long;
+        uint8_t be_flag;
+        uint32_t be_float;
+        uint64_t be_double;
+        int32_t string_size;
+        int32_t be_string_size;
+        Vector* vector;
+        switch(tag->datatype){
+            case BYTE:
+                pack_be_uint8(tag_get_Byte(tag), binary_string, binary_size, binary_max_size);
+                break;
+            case SHORT:
+                be_short = htobe16(tag_get_Short(tag));
+                pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
+                break;
+            case INTEGER:
+                be_integer = htobe32(tag_get_Integer(tag));
+                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                break;
+            case LONG:
+                be_long = htobe64(tag_get_Long(tag));
+                pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
+                break;
+            case FLAG:
+                be_flag = tag_get_Flag(tag);
+                pack_be_uint8(be_flag, binary_string, binary_size, binary_max_size);
+                break;
+            case FLOAT:
+                be_float = htobe32(tag_get_Float(tag));
+                pack_be_uint64(be_float, binary_string, binary_size, binary_max_size);
+                break;
+            case DOUBLE:
+                be_double = htobe64(tag_get_Double(tag));
+                pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
+                break;
+            case STRING:
+                string_size = strlen(tag_get_String(tag));
+                be_string_size = htobe32(string_size);
+                pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
+                pack_be_uint8_array(tag_get_String(tag), string_size, binary_string, binary_size, binary_max_size);
+                break;
+            case UUID:
+                pack_be_uint8_array(tag_get_UUID(tag), 16, binary_string, binary_size, binary_max_size);
+                break;
+            case VECTOR:
+                vector = tag_get_Vector(tag);
+                pack_be_uint8(vector->datatype, binary_string, binary_size, binary_max_size);
+                binary_string = vector_to_bin(vector, binary_string, binary_size, binary_max_size);
+                break;
+            case CONTAINER:
+                binary_string = container_to_bin(tag_get_Container(tag), binary_string, binary_size, binary_max_size);
+                break;
+            default:
+                break;
         }
-        if(tag->datatype == SHORT){
-            int16_t be_short = htobe16(tag_get_Short(tag));
-            pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == INTEGER){
-            int32_t be_integer = htobe32(tag_get_Integer(tag));
-            pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == LONG){
-            int64_t be_long = htobe64(tag_get_Long(tag));
-            pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == FLAG){
-            uint8_t be_flag = tag_get_Flag(tag);
-            pack_be_uint8(be_flag, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == FLOAT){
-            uint32_t be_float = htobe32(tag_get_Float(tag));
-            pack_be_uint64(be_float, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == DOUBLE){
-            uint64_t be_double = htobe64(tag_get_Double(tag));
-            pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == STRING){
-            int32_t string_size = strlen(tag_get_String(tag));
-            int32_t be_string_size = htobe32(string_size);
-            pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
-            pack_be_uint8_array(tag_get_String(tag), string_size, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == UUID){
-            pack_be_uint8_array(tag_get_UUID(tag), 16, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == NULL_TYPE){
-            goto next_tag;
-        }
-        if(tag->datatype == VECTOR){
-            Vector* vector = tag_get_Vector(tag);
-            pack_be_uint8(vector->datatype, binary_string, binary_size, binary_max_size);
-            binary_string = vector_to_bin(vector, binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        if(tag->datatype == CONTAINER){
-            binary_string = container_to_bin(tag_get_Container(tag), binary_string, binary_size, binary_max_size);
-            goto next_tag;
-        }
-        next_tag: top_el = top_el->next;
+        top_el = top_el->next;
     }
     return binary_string;
 }
@@ -366,65 +365,63 @@ char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, si
     pack_be_uint32(be_length, binary_string, binary_size, binary_max_size);
     List_element* el = vector->values->el;
     while(el != NULL){
-        if(vector->datatype == BYTE){
-            pack_be_uint8(tag_get_Byte(el), binary_string, binary_size, binary_max_size);
-            goto next_el;
+        int16_t be_short;
+        int32_t be_integer;
+        int64_t be_long;
+        char flag;
+        uint32_t be_float;
+        uint64_t be_double;
+        int32_t string_size;
+        int32_t be_string_size;
+        Vector* be_vector;
+        switch(vector->datatype){
+            case BYTE:
+                pack_be_uint8(tag_get_Byte(el), binary_string, binary_size, binary_max_size);
+                break;
+            case SHORT:
+                be_short = htobe16(tag_get_Short(el));
+                pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
+                break;
+            case INTEGER:
+                be_integer = htobe32(tag_get_Integer(el));
+                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                break;
+            case LONG:
+                be_integer = htobe32(tag_get_Integer(el));
+                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                break;
+            case FLAG:
+                flag = tag_get_Flag(el);
+                pack_be_uint8(flag, binary_string, binary_size, binary_max_size);
+                break;
+            case FLOAT:
+                be_float = htobe32(tag_get_Float(el));
+                pack_be_uint32(be_float, binary_string, binary_size, binary_max_size);
+                break;
+            case DOUBLE:
+                be_double = htobe64(tag_get_Double(el));
+                pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
+                break;
+            case STRING:
+                string_size = strlen(tag_get_String(el));
+                be_string_size = htobe32(string_size);
+                pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
+                pack_be_uint8_array(tag_get_String(el), string_size, binary_string, binary_size, binary_max_size);
+                break;
+            case UUID:
+                pack_be_uint8_array(tag_get_UUID(el), 16, binary_string, binary_size, binary_max_size);
+            case VECTOR:
+                be_vector = tag_get_Vector(el);
+                pack_be_uint8(be_vector->datatype, binary_string, binary_size, binary_max_size);
+                binary_string = vector_to_bin(be_vector, binary_string, binary_size, binary_max_size);
+                break;
+            case CONTAINER:
+                binary_string = container_to_bin(tag_get_Container(el), binary_string, binary_size, binary_max_size);
+                break;
+            default:
+                break;
         }
-        if(vector->datatype == SHORT){
-            int16_t be_short = htobe16(tag_get_Short(el));
-            pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == INTEGER){
-            int32_t be_integer = htobe32(tag_get_Integer(el));
-            pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == LONG){
-            int64_t be_long = htobe64(tag_get_Long(el));
-            pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == FLAG){
-            char flag = tag_get_Flag(el);
-            pack_be_uint8(flag, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == FLOAT){
-            uint32_t be_float = htobe32(tag_get_Float(el));
-            pack_be_uint32(be_float, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == DOUBLE){
-            uint64_t be_double = htobe64(tag_get_Double(el));
-            pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == STRING){
-            int32_t string_size = strlen(tag_get_String(el));
-            int32_t be_string_size = htobe32(string_size);
-            pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
-            pack_be_uint8_array(tag_get_String(el), string_size, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == UUID){
-            pack_be_uint8_array(tag_get_UUID(el), 16, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == NULL_TYPE){
-            goto next_el;
-        }
-        if(vector->datatype == VECTOR){
-            Vector* be_vector = tag_get_Vector(el);
-            pack_be_uint8(be_vector->datatype, binary_string, binary_size, binary_max_size);
-            binary_string = vector_to_bin(be_vector, binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        if(vector->datatype == CONTAINER){
-            binary_string = container_to_bin(tag_get_Container(el), binary_string, binary_size, binary_max_size);
-            goto next_el;
-        }
-        next_el: el = el->next;
+        el = el->next;
     }
     return binary_string;
 }
