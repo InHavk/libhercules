@@ -40,7 +40,6 @@ Event* event_create(uint8_t version, uint64_t timestamp, uint8_t* uuid) {
 }
 
 void event_free(Event* event){
-    //list_free(event->payload);
     container_free(event->payload);
     free(event);
 }
@@ -50,55 +49,30 @@ void container_free(List* container){
     List_element* last;
     while(top_el != NULL){
         Tag* tag = (Tag*) top_el->value;
-        if(tag->datatype == BYTE){
-            free(tag->value);
-            goto next_tag;
+        switch(tag->datatype) {
+            case BYTE:
+            case SHORT:
+            case INTEGER:
+            case LONG:
+            case FLAG:
+            case FLOAT:
+            case DOUBLE:
+            case STRING:
+            case UUID:
+                free(tag->value);
+                break;
+            case VECTOR:
+                vector_free(tag_get_Vector(tag));
+                break;
+            case CONTAINER:
+                container_free(tag_get_Container(tag));
+                break;
+            default:
+                break;
         }
-        if(tag->datatype == SHORT){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == INTEGER){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == LONG){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == FLAG){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == FLOAT){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == DOUBLE){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == STRING){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == UUID){
-            free(tag->value);
-            goto next_tag;
-        }
-        if(tag->datatype == NULL_TYPE){
-            goto next_tag;
-        }
-        if(tag->datatype == VECTOR){
-            vector_free(tag_get_Vector(tag));
-            goto next_tag;
-        }
-        if(tag->datatype == CONTAINER){
-            container_free(tag_get_Container(tag));
-            goto next_tag;
-        }
-        next_tag: last = top_el;
+        last = top_el;
         top_el = top_el->next;
+        free(tag);
         free(last);
     }
     free(container);
@@ -108,54 +82,28 @@ void vector_free(Vector* vector){
     List_element* top_el = vector->values->el;
     List_element* last;
     while(top_el != NULL){
-        if(vector->datatype == BYTE){
-            free(top_el->value);
-            goto next_tag;
+        switch(vector->datatype){
+            case BYTE:
+            case SHORT:
+            case INTEGER:
+            case LONG:
+            case FLAG:
+            case FLOAT:
+            case DOUBLE:
+            case STRING:
+            case UUID:
+                free(top_el->value);
+                break;
+            case VECTOR:
+                vector_free(tag_get_Vector(top_el));
+                break;
+            case CONTAINER:
+                container_free(tag_get_Container(top_el));
+                break;
+            default:
+                break;
         }
-        if(vector->datatype == SHORT){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == INTEGER){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == LONG){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == FLAG){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == FLOAT){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == DOUBLE){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == STRING){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == UUID){
-            free(top_el->value);
-            goto next_tag;
-        }
-        if(vector->datatype == NULL_TYPE){
-            goto next_tag;
-        }
-        if(vector->datatype == VECTOR){
-            vector_free(tag_get_Vector(top_el));
-            goto next_tag;
-        }
-        if(vector->datatype == CONTAINER){
-            container_free(tag_get_Container(top_el));
-            goto next_tag;
-        }
-        next_tag: last = top_el;
+        last = top_el;
         top_el = top_el->next;
         free(last);
     }
