@@ -107,6 +107,7 @@ void vector_free(Vector* vector){
         top_el = top_el->next;
         free(last);
     }
+    free(vector->values);
     free(vector);
 }
 
@@ -281,6 +282,7 @@ char* event_to_bin(Event* event, size_t* binary_size){
     // Payload
     // Container
     binary_string = container_to_bin(event->payload, binary_string, binary_size, binary_max_size);
+    free(binary_max_size);
     return binary_string;
 }
 

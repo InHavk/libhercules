@@ -27,6 +27,7 @@ void test_event_create(void){
     TEST_ASSERT_EQUAL_UINT64(timestamp, event->timestamp);
     TEST_ASSERT_EQUAL_UINT8(0x01, event->version);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(uuid, event->UUID, 16);
+    free(uuid);
     event_free(event);
 }
 
@@ -306,6 +307,7 @@ void test_event_with_container(void){
     // type check
     TEST_ASSERT_EQUAL(CONTAINER, tag12->datatype);
 
+    free(uuid);
     event_free(event);
 }
 
@@ -365,6 +367,7 @@ void test_event_to_binary(void){
 
     free(event_binary_size);
     free(event_binary);
+    free(uuid);
     event_free(event);
 }
 
