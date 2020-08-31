@@ -266,38 +266,39 @@ Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length
     return tag;
 }
 
-char* event_to_bin(Event* event, size_t* binary_size){
+Event_binary* event_to_bin(Event* event){
     size_t* binary_max_size = event->pool->alloc(sizeof(size_t));
     *binary_max_size = 1024 * 8;
-    char* binary_string = event->pool->alloc(sizeof(char) * *binary_max_size);
-    *binary_size = 0;
+    Event_binary* event_binary = event->pool->alloc(sizeof(Event_binary) + (sizeof(char) * *binary_max_size));
+    event_binary->size = 0;
+
     // Version
-    pack_be_uint8(event->version, binary_string, binary_size, binary_max_size);
+    pack_be_uint8(event->pool, event->version, event_binary, binary_max_size);
     // Timestamp
     uint64_t be_timestamp = htobe64(event->timestamp);
-    pack_be_uint64(be_timestamp, binary_string, binary_size, binary_max_size);
+    pack_be_uint64(event->pool, be_timestamp, event_binary, binary_max_size);
     // UUID
-    pack_be_uint8_array(event->UUID, 16, binary_string, binary_size, binary_max_size);
+    pack_be_uint8_array(event->pool, event->UUID, 16, event_binary, binary_max_size);
     // Payload
     // Container
-    binary_string = container_to_bin(event->pool, event->payload, binary_string, binary_size, binary_max_size);
+    event_binary = container_to_bin(event->pool, event->payload, event_binary, binary_max_size);
     event->pool->free(binary_max_size);
-    return binary_string;
+    return event_binary;
 }
 
-char* container_to_bin(Event_pool* pool, List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size){
+Event_binary* container_to_bin(Event_pool* pool, List* container, Event_binary* event_binary, size_t* binary_max_size){
     uint16_t be_length = htobe16(container->size);
-    pack_be_uint16(be_length, binary_string, binary_size, binary_max_size);
+    pack_be_uint16(pool, be_length, event_binary, binary_max_size);
     List_element* top_el = container->el;
     while(top_el != NULL){
         Tag* tag = (Tag*) top_el->value;
         // Key
         // KeyLength
-        pack_be_uint8(tag->key.length, binary_string, binary_size, binary_max_size);
+        pack_be_uint8(pool, tag->key.length, event_binary, binary_max_size);
         // KeyValue
-        pack_be_uint8_array(tag->key.value, tag->key.length, binary_string, binary_size, binary_max_size);
+        pack_be_uint8_array(pool, tag->key.value, tag->key.length, event_binary, binary_max_size);
         // Datatype
-        pack_be_uint8(tag->datatype, binary_string, binary_size, binary_max_size);
+        pack_be_uint8(pool, tag->datatype, event_binary, binary_max_size);
         // Value
         int16_t be_short;
         int32_t be_integer;
@@ -310,60 +311,60 @@ char* container_to_bin(Event_pool* pool, List* container, char* binary_string, s
         Vector* vector;
         switch(tag->datatype){
             case BYTE:
-                pack_be_uint8(tag_get_Byte(tag), binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, tag_get_Byte(tag), event_binary, binary_max_size);
                 break;
             case SHORT:
                 be_short = htobe16(tag_get_Short(tag));
-                pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
+                pack_be_uint16(pool, be_short, event_binary, binary_max_size);
                 break;
             case INTEGER:
                 be_integer = htobe32(tag_get_Integer(tag));
-                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                pack_be_uint32(pool, be_integer, event_binary, binary_max_size);
                 break;
             case LONG:
                 be_long = htobe64(tag_get_Long(tag));
-                pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
+                pack_be_uint64(pool, be_long, event_binary, binary_max_size);
                 break;
             case FLAG:
                 be_flag = tag_get_Flag(tag);
-                pack_be_uint8(be_flag, binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, be_flag, event_binary, binary_max_size);
                 break;
             case FLOAT:
                 be_float = htobe32(tag_get_Float(tag));
-                pack_be_uint64(be_float, binary_string, binary_size, binary_max_size);
+                pack_be_uint64(pool, be_float, event_binary, binary_max_size);
                 break;
             case DOUBLE:
                 be_double = htobe64(tag_get_Double(tag));
-                pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
+                pack_be_uint64(pool, be_double, event_binary, binary_max_size);
                 break;
             case STRING:
                 string_size = strlen(tag_get_String(tag));
                 be_string_size = htobe32(string_size);
-                pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
-                pack_be_uint8_array(tag_get_String(tag), string_size, binary_string, binary_size, binary_max_size);
+                pack_be_uint32(pool, be_string_size, event_binary, binary_max_size);
+                pack_be_uint8_array(pool, tag_get_String(tag), string_size, event_binary, binary_max_size);
                 break;
             case UUID:
-                pack_be_uint8_array(tag_get_UUID(tag), 16, binary_string, binary_size, binary_max_size);
+                pack_be_uint8_array(pool, tag_get_UUID(tag), 16, event_binary, binary_max_size);
                 break;
             case VECTOR:
                 vector = tag_get_Vector(tag);
-                pack_be_uint8(vector->datatype, binary_string, binary_size, binary_max_size);
-                binary_string = vector_to_bin(pool, vector, binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, vector->datatype, event_binary, binary_max_size);
+                event_binary = vector_to_bin(pool, vector, event_binary, binary_max_size);
                 break;
             case CONTAINER:
-                binary_string = container_to_bin(pool, tag_get_Container(tag), binary_string, binary_size, binary_max_size);
+                event_binary = container_to_bin(pool, tag_get_Container(tag), event_binary, binary_max_size);
                 break;
             default:
                 break;
         }
         top_el = top_el->next;
     }
-    return binary_string;
+    return event_binary;
 }
 
-char* vector_to_bin(Event_pool* pool, Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size){
+Event_binary* vector_to_bin(Event_pool* pool, Vector* vector, Event_binary* event_binary, size_t* binary_max_size){
     int32_t be_length = htobe32(vector->values->size);
-    pack_be_uint32(be_length, binary_string, binary_size, binary_max_size);
+    pack_be_uint32(pool, be_length, event_binary, binary_max_size);
     List_element* el = vector->values->el;
     while(el != NULL){
         int16_t be_short;
@@ -377,55 +378,55 @@ char* vector_to_bin(Event_pool* pool, Vector* vector, char* binary_string, size_
         Vector* be_vector;
         switch(vector->datatype){
             case BYTE:
-                pack_be_uint8(tag_get_Byte(el), binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, tag_get_Byte(el), event_binary, binary_max_size);
                 break;
             case SHORT:
                 be_short = htobe16(tag_get_Short(el));
-                pack_be_uint16(be_short, binary_string, binary_size, binary_max_size);
+                pack_be_uint16(pool, be_short, event_binary, binary_max_size);
                 break;
             case INTEGER:
                 be_integer = htobe32(tag_get_Integer(el));
-                pack_be_uint32(be_integer, binary_string, binary_size, binary_max_size);
+                pack_be_uint32(pool, be_integer, event_binary, binary_max_size);
                 break;
             case LONG:
                 be_long = htobe64(tag_get_Long(el));
-                pack_be_uint64(be_long, binary_string, binary_size, binary_max_size);
+                pack_be_uint64(pool, be_long, event_binary, binary_max_size);
                 break;
             case FLAG:
                 flag = tag_get_Flag(el);
-                pack_be_uint8(flag, binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, flag, event_binary, binary_max_size);
                 break;
             case FLOAT:
                 be_float = htobe32(tag_get_Float(el));
-                pack_be_uint32(be_float, binary_string, binary_size, binary_max_size);
+                pack_be_uint32(pool, be_float, event_binary, binary_max_size);
                 break;
             case DOUBLE:
                 be_double = htobe64(tag_get_Double(el));
-                pack_be_uint64(be_double, binary_string, binary_size, binary_max_size);
+                pack_be_uint64(pool, be_double, event_binary, binary_max_size);
                 break;
             case STRING:
                 string_size = strlen(tag_get_String(el));
                 be_string_size = htobe32(string_size);
-                pack_be_uint32(be_string_size, binary_string, binary_size, binary_max_size);
-                pack_be_uint8_array(tag_get_String(el), string_size, binary_string, binary_size, binary_max_size);
+                pack_be_uint32(pool, be_string_size, event_binary, binary_max_size);
+                pack_be_uint8_array(pool, tag_get_String(el), string_size, event_binary, binary_max_size);
                 break;
             case UUID:
-                pack_be_uint8_array(tag_get_UUID(el), 16, binary_string, binary_size, binary_max_size);
+                pack_be_uint8_array(pool, tag_get_UUID(el), 16, event_binary, binary_max_size);
                 break;
             case VECTOR:
                 be_vector = tag_get_Vector(el);
-                pack_be_uint8(be_vector->datatype, binary_string, binary_size, binary_max_size);
-                binary_string = vector_to_bin(pool, be_vector, binary_string, binary_size, binary_max_size);
+                pack_be_uint8(pool, be_vector->datatype, event_binary, binary_max_size);
+                event_binary = vector_to_bin(pool, be_vector, event_binary, binary_max_size);
                 break;
             case CONTAINER:
-                binary_string = container_to_bin(pool, tag_get_Container(el), binary_string, binary_size, binary_max_size);
+                event_binary = container_to_bin(pool, tag_get_Container(el), event_binary, binary_max_size);
                 break;
             default:
                 break;
         }
         el = el->next;
     }
-    return binary_string;
+    return event_binary;
 }
 
 void vector_add_Byte(Event_pool* pool, Vector* vector, uint8_t value){

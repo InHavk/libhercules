@@ -22,43 +22,43 @@
 #define tag_get_Vector(tag) ((Vector*) tag->value)
 #define tag_get_Container(tag) ((List*) tag->value)
 
-#define try_realloc_binary_string(size, binary_string, binary_size, binary_max_size) \
-  if(*binary_max_size - *binary_size < (size_t) size){\
+#define try_realloc_binary_string(pool, req_size, event_binary, binary_max_size) \
+  if(*binary_max_size - event_binary->size < (size_t) req_size){\
     *binary_max_size *= 2; \
-    binary_string = realloc(binary_string, *binary_max_size); \
+    event_binary = pool->realloc(event_binary, sizeof(Event_binary) + (sizeof(char) * *binary_max_size)); \
   }
 
-#define pack_be_uint8(value, binary_string, binary_size, binary_max_size) \
-  try_realloc_binary_string(1, binary_string, binary_size, binary_max_size);\
-  binary_string[(*binary_size)++] = value
+#define pack_be_uint8(pool, pack_value, event_binary, binary_max_size) \
+  try_realloc_binary_string(pool, 1, event_binary, binary_max_size);\
+  event_binary->value[(event_binary->size)++] = pack_value
 
-#define pack_be_uint16(value, binary_string, binary_size, binary_max_size) \
-  try_realloc_binary_string(2, binary_string, binary_size, binary_max_size);\
-  binary_string[(*binary_size)++] = (uint8_t) (value  & 0x00FF);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0xFF00) >> 8);
+#define pack_be_uint16(pool, pack_value, event_binary, binary_max_size) \
+  try_realloc_binary_string(pool, 2, event_binary, binary_max_size);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) (pack_value  & 0x00FF);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0xFF00) >> 8);
 
-#define pack_be_uint32(value, binary_string, binary_size, binary_max_size) \
-  try_realloc_binary_string(4, binary_string, binary_size, binary_max_size);\
-  binary_string[(*binary_size)++] = (uint8_t) (value  & 0x000000FF);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x0000FF00) >> 8);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x00FF0000) >> 16);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0xFF000000) >> 24);
+#define pack_be_uint32(pool, pack_value, event_binary, binary_max_size) \
+  try_realloc_binary_string(pool, 4, event_binary, binary_max_size);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) (pack_value  & 0x000000FF);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x0000FF00) >> 8);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x00FF0000) >> 16);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0xFF000000) >> 24);
 
-#define pack_be_uint64(value, binary_string, binary_size, binary_max_size) \
-  try_realloc_binary_string(8, binary_string, binary_size, binary_max_size);\
-  binary_string[(*binary_size)++] = (uint8_t) (value  & 0x00000000000000FF);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x000000000000FF00) >> 8);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x0000000000FF0000) >> 16);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x00000000FF000000) >> 24);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x000000FF00000000) >> 32);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x0000FF0000000000) >> 40);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0x00FF000000000000) >> 48);\
-  binary_string[(*binary_size)++] = (uint8_t) ((value & 0xFF00000000000000) >> 56)
+#define pack_be_uint64(pool, pack_value, event_binary, binary_max_size) \
+  try_realloc_binary_string(pool, 8, event_binary, binary_max_size);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) (pack_value  & 0x00000000000000FF);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x000000000000FF00) >> 8);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x0000000000FF0000) >> 16);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x00000000FF000000) >> 24);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x000000FF00000000) >> 32);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x0000FF0000000000) >> 40);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0x00FF000000000000) >> 48);\
+  event_binary->value[(event_binary->size)++] = (uint8_t) ((pack_value & 0xFF00000000000000) >> 56)
 
-#define pack_be_uint8_array(value, size, binary_string, binary_size, binary_max_size) \
-  try_realloc_binary_string(size, binary_string, binary_size, binary_max_size);\
-  for(size_t i = 0; i < (size_t) size; ++i){\
-    binary_string[(*binary_size)++] = value[i];\
+#define pack_be_uint8_array(pool, pack_value, req_size, event_binary, binary_max_size) \
+  try_realloc_binary_string(pool, req_size, event_binary, binary_max_size);\
+  for(size_t i = 0; i < (size_t) req_size; ++i){\
+    event_binary->value[(event_binary->size)++] = pack_value[i];\
   }
 
 enum DataType {
@@ -126,9 +126,9 @@ Tag* container_add_tag_UUID(Event_pool* pool, List* list, int8_t key_length, cha
 Tag* container_add_tag_Null(Event_pool* pool, List* list, int8_t key_length, char* key_name);
 Tag* container_add_tag_Vector(Event_pool* pool, List* list, enum DataType datatype, int8_t key_length, char* key_name);
 Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length, char* key_name);
-char* event_to_bin(Event* event, size_t* binary_size);
-char* container_to_bin(Event_pool* pool, List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size);
-char* vector_to_bin(Event_pool* pool, Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size);
+Event_binary* event_to_bin(Event* event);
+Event_binary* container_to_bin(Event_pool* pool, List* container, Event_binary* event_binary, size_t* binary_max_size);
+Event_binary* vector_to_bin(Event_pool* pool, Vector* vector, Event_binary* event_binary, size_t* binary_max_size);
 void vector_add_Byte(Event_pool* pool, Vector* vector, uint8_t value);
 void vector_add_Short(Event_pool* pool, Vector* vector, int16_t value);
 void vector_add_Integer(Event_pool* pool, Vector* vector, int32_t value);

@@ -352,8 +352,7 @@ void test_event_to_binary(void){
     vector_add_Byte(pool, (Vector*) tag->value, -66);
     vector_add_Byte(pool, (Vector*) tag->value, -17);
 
-    size_t* event_binary_size = pool->alloc(sizeof(size_t));
-    char* event_binary = event_to_bin(event, event_binary_size);
+    Event_binary* event_binary = event_to_bin(event);
 
     char origin_message[169] = {0x01, 0x00, 0x36, 0x46, 0x2a, 0xfd, 0x9e, 0xf8, 0x00, 0x5e, 0xf1, 0x82, 0x39, 0x8e, 0x6c,\
                             0x4e, 0x19, 0xb2, 0x22, 0xc8, 0x7f, 0xd0, 0x6b, 0x00, 0x3d, 0x00, 0x04, 0x0a, 0x53, 0x74,\
@@ -369,7 +368,6 @@ void test_event_to_binary(void){
                             0xde, 0xad, 0xbe, 0xef};
     TEST_ASSERT_EQUAL_CHAR_ARRAY(origin_message, event_binary, 169);
 
-    pool->free(event_binary_size);
     pool->free(event_binary);
     free(uuid);
     event_free(event);
