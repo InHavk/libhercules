@@ -29,7 +29,7 @@ PASSED = `grep -s PASS $(PATHR)*.txt`
 FAIL = `grep -s FAIL $(PATHR)*.txt`
 IGNORE = `grep -s IGNORE $(PATHR)*.txt`
 
-test: $(SRCST) $(SRCSP) $(SRCSL) $(SRCSS)
+test: $(PATHL)list.c $(PATHS)pool.c $(PATHS)pool/simple_pool.c $(PATHS)libhercules.c $(PATHU)unity.c $(PATHT)Testlibhercules.c
 	$(BUILD_PATHS)
 	$(COMPILE) $(CFLAGS) $(PATHL)list.c               -o $(PATHD)list.o
 	$(COMPILE) $(CFLAGS) $(PATHS)pool.c               -o $(PATHO)pool.o
