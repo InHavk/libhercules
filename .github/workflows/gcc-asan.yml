@@ -24,7 +24,7 @@ jobs:
     - name: check for asan log
       run: |
         if ls asan.log* 1> /dev/null 2>&1; then
-           cat cat asan.log*
+           cat asan.log*
            exit 1
         fi
 
