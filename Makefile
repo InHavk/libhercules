@@ -31,14 +31,14 @@ IGNORE = `grep -s IGNORE $(PATHR)*.txt`
 
 test: $(SRCST) $(SRCSP) $(SRCSL) $(SRCSS)
 	$(BUILD_PATHS)
-	$(COMPILE) $(CFLAGS) $(PATHL)list.c               -o $(PATHO)list.o
+	$(COMPILE) $(CFLAGS) $(PATHL)list.c               -o $(PATHD)list.o
 	$(COMPILE) $(CFLAGS) $(PATHS)pool.c               -o $(PATHO)pool.o
 	$(COMPILE) $(CFLAGS) $(PATHS)pool/simple_pool.c   -o $(PATHO)simple_pool.o
 	$(COMPILE) $(CFLAGS) $(PATHS)libhercules.c        -o $(PATHO)libhercules.o
-	$(COMPILE) $(CFLAGS) $(PATHU)unity.c              -o $(PATHU)unity.o
+	$(COMPILE) $(CFLAGS) $(PATHU)unity.c              -o $(PATHD)unity.o
 	$(COMPILE) $(CFLAGS) $(PATHT)Testlibhercules.c    -o $(PATHO)Testlibhercules.o
-	$(LINK) -o $(PATHO)Testlibhercules.out $(PATHO)list.o $(PATHO)pool.o $(PATHO)simple_pool.o $(PATHO)libhercules.o $(PATHU)unity.o $(PATHO)Testlibhercules.o
-	./$(PATHO)Testlibhercules.out > $(PATHR)Testlibhercules.txt 2>&1
+	$(LINK) -o $(PATHB)Testlibhercules.out $(PATHD)list.o $(PATHO)pool.o $(PATHO)simple_pool.o $(PATHO)libhercules.o $(PATHD)unity.o $(PATHO)Testlibhercules.o
+	./$(PATHB)Testlibhercules.out > $(PATHR)Testlibhercules.txt 2>&1
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
