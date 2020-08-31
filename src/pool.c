@@ -1,7 +1,6 @@
 #include "pool.h"
 
-Event_pool* pool_init(){
-    Event_pool* pool = event_pool_alloc(sizeof(Event_pool));
+void pool_init(Event_pool* pool){
     pool->alloc = &event_pool_alloc;
     pool->realloc = &event_pool_realloc;
     pool->free = &event_pool_free;
@@ -10,10 +9,9 @@ Event_pool* pool_init(){
     pool->destroy = &event_pool_destroy;
     pool->pool = NULL;
     pool->init(pool);
-    return pool;
 }
 
 void pool_destroy(Event_pool* pool){
     pool->destroy(pool);
-    event_pool_force_free(pool);
+    event_pool_force_free(pool, pool);
 }

@@ -30,7 +30,7 @@ uint64_t generate_current_timestamp() {
 }
 
 Event* event_create(Event_pool* pool, uint8_t version, uint64_t timestamp, uint8_t* uuid) {
-    Event* event = pool->alloc(sizeof(Event));
+    Event* event = pool->alloc(pool, sizeof(Event));
     event->pool = pool;
     event->payload = list_create(pool);
     event->version = version;
@@ -41,7 +41,7 @@ Event* event_create(Event_pool* pool, uint8_t version, uint64_t timestamp, uint8
 
 void event_free(Event* event){
     container_free(event->pool, event->payload);
-    event->pool->free(event);
+    event->pool->free(event->pool, event);
 }
 
 void container_free(Event_pool* pool, List* container){
@@ -59,7 +59,7 @@ void container_free(Event_pool* pool, List* container){
             case DOUBLE:
             case STRING:
             case UUID:
-                pool->free(tag->value);
+                pool->free(pool, tag->value);
                 break;
             case VECTOR:
                 vector_free(pool, tag_get_Vector(tag));
@@ -72,10 +72,10 @@ void container_free(Event_pool* pool, List* container){
         }
         last = top_el;
         top_el = top_el->next;
-        pool->free(tag);
-        pool->free(last);
+        pool->free(pool, tag);
+        pool->free(pool, last);
     }
-    pool->free(container);
+    pool->free(pool, container);
 }
 
 void vector_free(Event_pool* pool, Vector* vector){
@@ -92,7 +92,7 @@ void vector_free(Event_pool* pool, Vector* vector){
             case DOUBLE:
             case STRING:
             case UUID:
-                pool->free(top_el->value);
+                pool->free(pool, top_el->value);
                 break;
             case VECTOR:
                 vector_free(pool, tag_get_Vector(top_el));
@@ -105,10 +105,10 @@ void vector_free(Event_pool* pool, Vector* vector){
         }
         last = top_el;
         top_el = top_el->next;
-        pool->free(last);
+        pool->free(pool, last);
     }
-    pool->free(vector->values);
-    pool->free(vector);
+    pool->free(pool, vector->values);
+    pool->free(pool, vector);
 }
 
 Event* create_event(Event_pool* pool) {
@@ -135,107 +135,107 @@ Tag* container_find_tag(List* list, int8_t key_length, char* key_name){
 }
 
 Tag* container_add_tag_Byte(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = BYTE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(uint8_t));
+    tag->value = pool->alloc(pool, sizeof(uint8_t));
     *((uint8_t*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Short(Event_pool* pool, List* list, int8_t key_length, char* key_name, int16_t value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = SHORT;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(int16_t));
+    tag->value = pool->alloc(pool, sizeof(int16_t));
     *((int16_t*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Integer(Event_pool* pool, List* list, int8_t key_length, char* key_name, int32_t value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = INTEGER;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(int32_t));
+    tag->value = pool->alloc(pool, sizeof(int32_t));
     *((int32_t*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Long(Event_pool* pool, List* list, int8_t key_length, char* key_name, int64_t value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = LONG;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(int64_t));
+    tag->value = pool->alloc(pool, sizeof(int64_t));
     *((int64_t*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Flag(Event_pool* pool, List* list, int8_t key_length, char* key_name, char value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLAG;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(char));
+    tag->value = pool->alloc(pool, sizeof(char));
     *((char*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Float(Event_pool* pool, List* list, int8_t key_length, char* key_name, float value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLOAT;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(float));
+    tag->value = pool->alloc(pool, sizeof(float));
     *((float*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Double(Event_pool* pool, List* list, int8_t key_length, char* key_name, double value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = DOUBLE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(double));
+    tag->value = pool->alloc(pool, sizeof(double));
     *((double*) tag->value) = value;
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_String(Event_pool* pool, List* list, int8_t key_length, char* key_name, char* value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = STRING;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
     uint64_t size_of_value = strlen(value);
-    tag->value = pool->alloc(sizeof(char) * (size_of_value + 1));
+    tag->value = pool->alloc(pool, sizeof(char) * (size_of_value + 1));
     strcpy(tag->value, value);
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_UUID(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t* value){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = UUID;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(uint8_t) * 16);
+    tag->value = pool->alloc(pool, sizeof(uint8_t) * 16);
     memcpy((uint8_t*) tag->value, value, 16);
     list_append(pool, list, tag);
     return tag;
 }
 
 Tag* container_add_tag_Null(Event_pool* pool, List* list, int8_t key_length, char* key_name){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = NULL_TYPE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
@@ -245,11 +245,11 @@ Tag* container_add_tag_Null(Event_pool* pool, List* list, int8_t key_length, cha
 }
 
 Tag* container_add_tag_Vector(Event_pool* pool, List* list, enum DataType datatype, int8_t key_length, char* key_name){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = VECTOR;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = pool->alloc(sizeof(Vector));
+    tag->value = pool->alloc(pool, sizeof(Vector));
     ((Vector*) tag->value)->datatype = datatype;
     ((Vector*) tag->value)->values = list_create(pool);
     list_append(pool, list, tag);
@@ -257,7 +257,7 @@ Tag* container_add_tag_Vector(Event_pool* pool, List* list, enum DataType dataty
 }
 
 Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length, char* key_name){
-    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+    Tag* tag = pool->alloc(pool, sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = CONTAINER;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
@@ -267,9 +267,9 @@ Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length
 }
 
 Event_binary* event_to_bin(Event* event){
-    size_t* binary_max_size = event->pool->alloc(sizeof(size_t));
+    size_t* binary_max_size = event->pool->alloc(event->pool, sizeof(size_t));
     *binary_max_size = 1024 * 8;
-    Event_binary* event_binary = event->pool->alloc(sizeof(Event_binary) + (sizeof(char) * *binary_max_size));
+    Event_binary* event_binary = event->pool->alloc(event->pool, sizeof(Event_binary) + (sizeof(char) * *binary_max_size));
     event_binary->size = 0;
 
     // Version
@@ -282,7 +282,7 @@ Event_binary* event_to_bin(Event* event){
     // Payload
     // Container
     event_binary = container_to_bin(event->pool, event->payload, event_binary, binary_max_size);
-    event->pool->free(binary_max_size);
+    event->pool->free(event->pool, binary_max_size);
     return event_binary;
 }
 
@@ -430,61 +430,61 @@ Event_binary* vector_to_bin(Event_pool* pool, Vector* vector, Event_binary* even
 }
 
 void vector_add_Byte(Event_pool* pool, Vector* vector, uint8_t value){
-    uint8_t* v_byte = pool->alloc(sizeof(uint8_t));
+    uint8_t* v_byte = pool->alloc(pool, sizeof(uint8_t));
     *v_byte = value;
     list_append(pool, vector->values, v_byte);
 }
 
 void vector_add_Short(Event_pool* pool, Vector* vector, int16_t value){
-    int16_t* v_short = pool->alloc(sizeof(int16_t));
+    int16_t* v_short = pool->alloc(pool, sizeof(int16_t));
     *v_short = value;
     list_append(pool, vector->values, v_short);
 }
 
 void vector_add_Integer(Event_pool* pool, Vector* vector, int32_t value){
-    int32_t* v_integer = pool->alloc(sizeof(int32_t));
+    int32_t* v_integer = pool->alloc(pool, sizeof(int32_t));
     *v_integer = value;
     list_append(pool, vector->values, v_integer);
 }
 
 void vector_add_Long(Event_pool* pool, Vector* vector, int64_t value){
-    int64_t* v_long = pool->alloc(sizeof(int64_t));
+    int64_t* v_long = pool->alloc(pool, sizeof(int64_t));
     *v_long = value;
     list_append(pool, vector->values, v_long);
 }
 
 void vector_add_Flag(Event_pool* pool, Vector* vector, char value){
-    char* v_flag = pool->alloc(sizeof(char));
+    char* v_flag = pool->alloc(pool, sizeof(char));
     *v_flag = value;
     list_append(pool, vector->values, v_flag);
 }
 
 void vector_add_Float(Event_pool* pool, Vector* vector, float value){
-    float* v_float = pool->alloc(sizeof(float));
+    float* v_float = pool->alloc(pool, sizeof(float));
     *v_float = value;
     list_append(pool, vector->values, v_float);
 }
 
 void vector_add_Double(Event_pool* pool, Vector* vector, double value){
-    double* v_double = pool->alloc(sizeof(double));
+    double* v_double = pool->alloc(pool, sizeof(double));
     *v_double = value;
     list_append(pool, vector->values, v_double);
 }
 
 void vector_add_String(Event_pool* pool, Vector* vector, char* value){
-    char* v_string = pool->alloc(sizeof(char) * strlen(value));
+    char* v_string = pool->alloc(pool, sizeof(char) * strlen(value));
     strcpy(v_string, value);
     list_append(pool, vector->values, v_string);
 }
 
 void vector_add_UUID(Event_pool* pool, Vector* vector, uint8_t* value){
-    uint8_t* v_uuid = pool->alloc(sizeof(uint8_t) * 16);
+    uint8_t* v_uuid = pool->alloc(pool, sizeof(uint8_t) * 16);
     memcpy(v_uuid, value, 16);
     list_append(pool, vector->values, v_uuid);
 }
 
 Vector* vector_add_Vector(Event_pool* pool, Vector* vector, enum DataType datatype){
-    Vector* v_vector = pool->alloc(sizeof(Vector));
+    Vector* v_vector = pool->alloc(pool, sizeof(Vector));
     v_vector->datatype = datatype;
     v_vector->values = list_create(pool);
     list_append(pool, vector->values, v_vector);

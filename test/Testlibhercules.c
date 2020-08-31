@@ -23,20 +23,23 @@ void test_event_create(void){
     uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
     generate_uuid_v4(uuid);
     uint64_t timestamp = generate_current_timestamp();
-    Event_pool* pool = pool_init();
+    Event_pool* pool = malloc(sizeof(Event_pool));
+    pool_init(pool);
     Event* event = event_create(pool, 0x01, timestamp, uuid);
     TEST_ASSERT_EQUAL_UINT64(timestamp, event->timestamp);
     TEST_ASSERT_EQUAL_UINT8(0x01, event->version);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(uuid, event->UUID, 16);
     free(uuid);
     event_free(event);
+    pool_destroy(pool);
 }
 
 void test_event_with_container(void){
     uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
     generate_uuid_v4(uuid);
     uint64_t timestamp = generate_current_timestamp();
-    Event_pool* pool = pool_init();
+    Event_pool* pool = malloc(sizeof(Event_pool));
+    pool_init(pool);
     Event* event = event_create(pool, 0x01, timestamp, uuid);
     
     // add Tag "byte" with type Byte and value 55
@@ -334,7 +337,8 @@ void test_event_to_binary(void){
     uuid[14] = 0x00;
     uuid[15] = 0x3d;
     uint64_t timestamp = 15276799200000000;
-    Event_pool* pool = pool_init();
+    Event_pool* pool = malloc(sizeof(Event_pool));
+    pool_init(pool);
     Event* event = event_create(pool, 0x01, timestamp, uuid);
     
     container_add_tag_String(pool, event->payload, 10, "String tag", "String value");
@@ -366,9 +370,9 @@ void test_event_to_binary(void){
                             0x67, 0x04, 0x07, 0x5a, 0x1a, 0x9f, 0x00, 0x01, 0x0f, 0x42, 0x79, 0x74, 0x65, 0x20, 0x76,\
                             0x65, 0x63, 0x74, 0x6f, 0x72, 0x20, 0x74, 0x61, 0x67, 0x80, 0x02, 0x00, 0x00, 0x00, 0x04,\
                             0xde, 0xad, 0xbe, 0xef};
-    TEST_ASSERT_EQUAL_CHAR_ARRAY(origin_message, event_binary, 169);
+    TEST_ASSERT_EQUAL_CHAR_ARRAY(origin_message, event_binary->value, 169);
 
-    pool->free(event_binary);
+    pool->free(pool, event_binary);
     free(uuid);
     event_free(event);
     pool_destroy(pool);

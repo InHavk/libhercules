@@ -1,15 +1,15 @@
 #include "pool.h"
 
-void* event_pool_alloc(size_t size){
+void* event_pool_alloc(Event_pool* pool, size_t size){
     return malloc(size);
 }
-void* event_pool_realloc(void* obj, size_t size){
+void* event_pool_realloc(Event_pool* pool, void* obj, size_t size){
     return realloc(obj, size);
 }
-void  event_pool_free(void* obj){
+void  event_pool_free(Event_pool* pool, void* obj){
     free(obj);
 }
-void  event_pool_force_free(void* obj){
+void  event_pool_force_free(Event_pool* pool, void* obj){
     free(obj);
 }
 void  event_pool_init(struct event_pool* pool){
