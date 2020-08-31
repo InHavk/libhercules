@@ -28,6 +28,7 @@ CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST -fPIC
 PASSED = `grep -s PASS $(PATHR)*.txt`
 FAIL = `grep -s FAIL $(PATHR)*.txt`
 IGNORE = `grep -s IGNORE $(PATHR)*.txt`
+RAWC = `cat $(PATHR)Testlibhercules.txt`
 
 test: $(BUILD_PATHS) $(PATHL)list.c $(PATHS)pool.c $(PATHS)pool/simple_pool.c $(PATHS)libhercules.c $(PATHU)unity.c $(PATHT)Testlibhercules.c
 	$(COMPILE) $(CFLAGS) $(PATHL)list.c               -o $(PATHD)list.o
@@ -45,6 +46,8 @@ test: $(BUILD_PATHS) $(PATHL)list.c $(PATHS)pool.c $(PATHS)pool/simple_pool.c $(
 	@echo "-----------------------\nPASSED:\n-----------------------"
 	@echo "$(PASSED)"
 	@echo "\nDONE"
+	@echo "\n\n\n-----------------------\nRAW:\n-----------------------"
+	@echo "$(RAWC)"
 
 BUILD_PATHS:
 	$(MKDIR) $(PATHB) $(PATHD) $(PATHO) $(PATHR)
