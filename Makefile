@@ -37,7 +37,7 @@ test: $(BUILD_PATHS) $(PATHL)list.c $(PATHS)pool.c $(PATHS)pool/simple_pool.c $(
 	$(COMPILE) $(CFLAGS) $(PATHU)unity.c              -o $(PATHD)unity.o
 	$(COMPILE) $(CFLAGS) $(PATHT)Testlibhercules.c    -o $(PATHO)Testlibhercules.o
 	$(LINK) -o $(PATHB)Testlibhercules.out $(PATHD)list.o $(PATHO)pool.o $(PATHO)simple_pool.o $(PATHO)libhercules.o $(PATHD)unity.o $(PATHO)Testlibhercules.o
-	./$(PATHB)Testlibhercules.out > $(PATHR)Testlibhercules.txt 2>&1
+	./$(PATHB)Testlibhercules.out > $(PATHR)Testlibhercules.txt 2>&1 || exit 0
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
