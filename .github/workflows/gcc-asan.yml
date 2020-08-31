@@ -19,8 +19,6 @@ jobs:
         sudo apt install -y libasan6
     - name: build
       run: |
-        make
-        make clean
         export ASAN_OPTIONS="log_path=asan.log"
         make COMPILE="gcc -fsanitize=address -g -c" LINK="gcc -fsanitize=address -lasan"
     - name: check for asan log
