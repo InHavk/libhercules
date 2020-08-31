@@ -16,7 +16,7 @@ PATHO = build/objs/
 PATHR = build/results/
 
 SRCST = $(wildcard $(PATHT)*.c)
-SRCSP = $(wildcard $(PATHS)pool*.c)
+SRCSP = $(wildcard $(PATHS)pool/*.c)
 SRCSL = $(wildcard $(PATHL)*.c)
 SRCSS = $(wildcard $(PATHS)*.c)
 
