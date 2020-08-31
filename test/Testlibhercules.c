@@ -23,7 +23,8 @@ void test_event_create(void){
     uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
     generate_uuid_v4(uuid);
     uint64_t timestamp = generate_current_timestamp();
-    Event* event = event_create(0x01, timestamp, uuid);
+    Event_pool* pool = pool_init();
+    Event* event = event_create(pool, 0x01, timestamp, uuid);
     TEST_ASSERT_EQUAL_UINT64(timestamp, event->timestamp);
     TEST_ASSERT_EQUAL_UINT8(0x01, event->version);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(uuid, event->UUID, 16);
@@ -35,10 +36,11 @@ void test_event_with_container(void){
     uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
     generate_uuid_v4(uuid);
     uint64_t timestamp = generate_current_timestamp();
-    Event* event = event_create(0x01, timestamp, uuid);
+    Event_pool* pool = pool_init();
+    Event* event = event_create(pool, 0x01, timestamp, uuid);
     
     // add Tag "byte" with type Byte and value 55
-    Tag* tag1_i = container_add_tag_Byte(event->payload, 4, "byte", 55);
+    Tag* tag1_i = container_add_tag_Byte(pool, event->payload, 4, "byte", 55);
     // direct check
     TEST_ASSERT_EQUAL_UINT8(55, *((uint8_t*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(4, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -60,7 +62,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(BYTE, tag1->datatype);
 
     // add Tag "short" with type Short and value 1024
-    Tag* tag2_i = container_add_tag_Short(event->payload, 5, "short", 1024);
+    Tag* tag2_i = container_add_tag_Short(pool, event->payload, 5, "short", 1024);
     // direct check
     TEST_ASSERT_EQUAL_INT16(1024, *((int16_t*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(5, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -82,7 +84,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(SHORT, tag2->datatype);
 
     // add Tag "integer" with type Integer and value 1048576
-    Tag* tag3_i = container_add_tag_Integer(event->payload, 7, "integer", 1048576);
+    Tag* tag3_i = container_add_tag_Integer(pool, event->payload, 7, "integer", 1048576);
     // direct check
     TEST_ASSERT_EQUAL_INT32(1048576, *((int32_t*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(7, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -104,7 +106,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(INTEGER, tag3->datatype);
 
     // add Tag "long" with type Long and value 274877906944
-    Tag* tag4_i = container_add_tag_Long(event->payload, 4, "long", 274877906944);
+    Tag* tag4_i = container_add_tag_Long(pool, event->payload, 4, "long", 274877906944);
     // direct check
     TEST_ASSERT_EQUAL_INT64(274877906944, *((int64_t*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(4, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -126,7 +128,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(LONG, tag4->datatype);
 
     // add Tag "flag" with type Flag and value 1
-    Tag* tag5_i = container_add_tag_Flag(event->payload, 4, "flag", 1);
+    Tag* tag5_i = container_add_tag_Flag(pool, event->payload, 4, "flag", 1);
     // direct check
     TEST_ASSERT_EQUAL(1, *((char*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(4, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -148,7 +150,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(FLAG, tag5->datatype);
 
     // add Tag "float" with type Float and value 32.0f
-    Tag* tag6_i = container_add_tag_Float(event->payload, 5, "float", 32.0f);
+    Tag* tag6_i = container_add_tag_Float(pool, event->payload, 5, "float", 32.0f);
     // direct check
     TEST_ASSERT_EQUAL_FLOAT(32.0f, *((float*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(5, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -170,7 +172,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(FLOAT, tag6->datatype);
 
     // add Tag "double" with type Double and value 64.0
-    Tag* tag7_i = container_add_tag_Double(event->payload, 6, "double", 64.0);
+    Tag* tag7_i = container_add_tag_Double(pool, event->payload, 6, "double", 64.0);
     // direct check
     TEST_ASSERT_EQUAL(64.0, *((double*) ((Tag*) (list_get_latest(event->payload)->value))->value));
     TEST_ASSERT_EQUAL_INT8(6, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -192,7 +194,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(DOUBLE, tag7->datatype);
 
     // add Tag "string" with type String and value "test string"
-    Tag* tag8_i = container_add_tag_String(event->payload, 6, "string", "test string");
+    Tag* tag8_i = container_add_tag_String(pool, event->payload, 6, "string", "test string");
     // direct check
     TEST_ASSERT_EQUAL_STRING("test string", (char*) ((Tag*) (list_get_latest(event->payload)->value))->value);
     TEST_ASSERT_EQUAL_INT8(6, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -215,7 +217,7 @@ void test_event_with_container(void){
 
     // add Tag "uuid" with type UUID and value 0x5f, 0x3e, 0x88, 0xbb, 0x23, 0xf0, 0xfe, 0x97, 0xcb, 0xc5, 0xe2, 0x3d, 0x82, 0xdd, 0x3e, 0xca
     uint8_t uuid_value[16] = {0x5f, 0x3e, 0x88, 0xbb, 0x23, 0xf0, 0xfe, 0x97, 0xcb, 0xc5, 0xe2, 0x3d, 0x82, 0xdd, 0x3e, 0xca};
-    Tag* tag9_i = container_add_tag_UUID(event->payload, 4, "uuid", uuid_value);
+    Tag* tag9_i = container_add_tag_UUID(pool, event->payload, 4, "uuid", uuid_value);
     // direct check
     TEST_ASSERT_EQUAL_UINT8_ARRAY(uuid_value, (uint8_t*) ((Tag*) (list_get_latest(event->payload)->value))->value, 16);
     TEST_ASSERT_EQUAL_INT8(4, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
@@ -237,7 +239,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(UUID, tag9->datatype);
 
     // add Tag "null" with type Null
-    Tag* tag10_i = container_add_tag_Null(event->payload, 4, "null");
+    Tag* tag10_i = container_add_tag_Null(pool, event->payload, 4, "null");
     // direct check
     TEST_ASSERT_EQUAL_INT8(4, ((Tag*) (list_get_latest(event->payload)->value))->key.length);
     TEST_ASSERT_EQUAL_STRING("null", ((Tag*) (list_get_latest(event->payload)->value))->key.value);
@@ -255,7 +257,7 @@ void test_event_with_container(void){
 
 
     // add Tag "vector" with type Vector
-    Tag* tag11_i = container_add_tag_Vector(event->payload, NULL_TYPE, 6, "vector");
+    Tag* tag11_i = container_add_tag_Vector(pool, event->payload, NULL_TYPE, 6, "vector");
     // direct check
     TEST_ASSERT_EQUAL_size_t(0, (size_t) ((List*)((Vector*)((Tag*) (list_get_latest(event->payload)->value))->value)->values)->size);
     TEST_ASSERT_NULL((List_element*)((List*)((Vector*)((Tag*) (list_get_latest(event->payload)->value))->value)->values)->el);
@@ -283,7 +285,7 @@ void test_event_with_container(void){
     TEST_ASSERT_EQUAL(VECTOR, tag11->datatype);
 
     // add Tag "container" with type Container
-    Tag* tag12_i = container_add_tag_Container(event->payload, 9, "container");
+    Tag* tag12_i = container_add_tag_Container(pool, event->payload, 9, "container");
     // direct check
     TEST_ASSERT_EQUAL_size_t(0, (size_t) ((List*) ((Tag*) (list_get_latest(event->payload)->value))->value)->size);
     TEST_ASSERT_NULL((List_element*) ((List*) ((Tag*) (list_get_latest(event->payload)->value))->value)->el);
@@ -309,6 +311,7 @@ void test_event_with_container(void){
 
     free(uuid);
     event_free(event);
+    pool_destroy(pool);
 }
 
 void test_event_to_binary(void){
@@ -331,24 +334,25 @@ void test_event_to_binary(void){
     uuid[14] = 0x00;
     uuid[15] = 0x3d;
     uint64_t timestamp = 15276799200000000;
-    Event* event = event_create(0x01, timestamp, uuid);
+    Event_pool* pool = pool_init();
+    Event* event = event_create(pool, 0x01, timestamp, uuid);
     
-    container_add_tag_String(event->payload, 10, "String tag", "String value");
-    container_add_tag_Null(event->payload, 8, "Null tag");
-    container_add_tag_UUID(event->payload, 8, "Uuid tag", uuid);
-    container_add_tag_Vector(event->payload, CONTAINER, 19, "Container array tag");
+    container_add_tag_String(pool, event->payload, 10, "String tag", "String value");
+    container_add_tag_Null(pool, event->payload, 8, "Null tag");
+    container_add_tag_UUID(pool, event->payload, 8, "Uuid tag", uuid);
+    container_add_tag_Vector(pool, event->payload, CONTAINER, 19, "Container array tag");
     Tag* tag = container_find_tag(event->payload, 19, "Container array tag");
-    vector_add_Container((Vector*) tag->value);
-    container_add_tag_Integer(list_get_latest(((Vector*) tag->value)->values)->value, 16, "Some integer tag", 123345567);
-    vector_add_Container((Vector*) tag->value);
-    container_add_tag_Vector(list_get_latest(((Vector*) tag->value)->values)->value, BYTE, 15, "Byte vector tag");
+    vector_add_Container(pool, (Vector*) tag->value);
+    container_add_tag_Integer(pool, list_get_latest(((Vector*) tag->value)->values)->value, 16, "Some integer tag", 123345567);
+    vector_add_Container(pool, (Vector*) tag->value);
+    container_add_tag_Vector(pool, list_get_latest(((Vector*) tag->value)->values)->value, BYTE, 15, "Byte vector tag");
     tag = container_find_tag(list_get_latest(((Vector*) tag->value)->values)->value, 15, "Byte vector tag");
-    vector_add_Byte((Vector*) tag->value, -34);
-    vector_add_Byte((Vector*) tag->value, -83);
-    vector_add_Byte((Vector*) tag->value, -66);
-    vector_add_Byte((Vector*) tag->value, -17);
+    vector_add_Byte(pool, (Vector*) tag->value, -34);
+    vector_add_Byte(pool, (Vector*) tag->value, -83);
+    vector_add_Byte(pool, (Vector*) tag->value, -66);
+    vector_add_Byte(pool, (Vector*) tag->value, -17);
 
-    size_t* event_binary_size = malloc(sizeof(size_t));
+    size_t* event_binary_size = pool->alloc(sizeof(size_t));
     char* event_binary = event_to_bin(event, event_binary_size);
 
     char origin_message[169] = {0x01, 0x00, 0x36, 0x46, 0x2a, 0xfd, 0x9e, 0xf8, 0x00, 0x5e, 0xf1, 0x82, 0x39, 0x8e, 0x6c,\
@@ -365,10 +369,11 @@ void test_event_to_binary(void){
                             0xde, 0xad, 0xbe, 0xef};
     TEST_ASSERT_EQUAL_CHAR_ARRAY(origin_message, event_binary, 169);
 
-    free(event_binary_size);
-    free(event_binary);
+    pool->free(event_binary_size);
+    pool->free(event_binary);
     free(uuid);
     event_free(event);
+    pool_destroy(pool);
 }
 
 void setUp (void) {}

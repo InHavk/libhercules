@@ -23,16 +23,16 @@ void generate_uuid_v4(uint8_t* uuid) {
 }
 
 uint64_t generate_current_timestamp() {
-    struct timespec* t = malloc(sizeof(struct timespec));
-    clock_gettime(CLOCK_REALTIME, t);
-    uint64_t timestamp = (t->tv_sec * 10000000) + (t->tv_nsec / 100);
-    free(t);
+    struct timespec t;
+    clock_gettime(CLOCK_REALTIME, &t);
+    uint64_t timestamp = (t.tv_sec * 10000000) + (t.tv_nsec / 100);
     return timestamp;
 }
 
-Event* event_create(uint8_t version, uint64_t timestamp, uint8_t* uuid) {
-    Event* event = malloc(sizeof(Event));
-    event->payload = list_create();
+Event* event_create(Event_pool* pool, uint8_t version, uint64_t timestamp, uint8_t* uuid) {
+    Event* event = pool->alloc(sizeof(Event));
+    event->pool = pool;
+    event->payload = list_create(pool);
     event->version = version;
     event->timestamp = timestamp;
     memcpy(event->UUID, uuid, 16);
@@ -40,11 +40,11 @@ Event* event_create(uint8_t version, uint64_t timestamp, uint8_t* uuid) {
 }
 
 void event_free(Event* event){
-    container_free(event->payload);
-    free(event);
+    container_free(event->pool, event->payload);
+    event->pool->free(event);
 }
 
-void container_free(List* container){
+void container_free(Event_pool* pool, List* container){
     List_element* top_el = container->el;
     List_element* last;
     while(top_el != NULL){
@@ -59,26 +59,26 @@ void container_free(List* container){
             case DOUBLE:
             case STRING:
             case UUID:
-                free(tag->value);
+                pool->free(tag->value);
                 break;
             case VECTOR:
-                vector_free(tag_get_Vector(tag));
+                vector_free(pool, tag_get_Vector(tag));
                 break;
             case CONTAINER:
-                container_free(tag_get_Container(tag));
+                container_free(pool, tag_get_Container(tag));
                 break;
             default:
                 break;
         }
         last = top_el;
         top_el = top_el->next;
-        free(tag);
-        free(last);
+        pool->free(tag);
+        pool->free(last);
     }
-    free(container);
+    pool->free(container);
 }
 
-void vector_free(Vector* vector){
+void vector_free(Event_pool* pool, Vector* vector){
     List_element* top_el = vector->values->el;
     List_element* last;
     while(top_el != NULL){
@@ -92,30 +92,29 @@ void vector_free(Vector* vector){
             case DOUBLE:
             case STRING:
             case UUID:
-                free(top_el->value);
+                pool->free(top_el->value);
                 break;
             case VECTOR:
-                vector_free(tag_get_Vector(top_el));
+                vector_free(pool, tag_get_Vector(top_el));
                 break;
             case CONTAINER:
-                container_free(tag_get_Container(top_el));
+                container_free(pool, tag_get_Container(top_el));
                 break;
             default:
                 break;
         }
         last = top_el;
         top_el = top_el->next;
-        free(last);
+        pool->free(last);
     }
-    free(vector->values);
-    free(vector);
+    pool->free(vector->values);
+    pool->free(vector);
 }
 
-Event* create_event() {
-    uint8_t* uuid = malloc(sizeof(uint8_t) * 16);
+Event* create_event(Event_pool* pool) {
+    uint8_t  uuid[16];
     generate_uuid_v4(uuid);
-    Event* event = event_create(0x01, generate_current_timestamp(), uuid);
-    free(uuid);
+    Event* event = event_create(pool, 0x01, generate_current_timestamp(), uuid);
     return event;
 }
 
@@ -135,142 +134,142 @@ Tag* container_find_tag(List* list, int8_t key_length, char* key_name){
     }
 }
 
-Tag* container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Byte(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = BYTE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(uint8_t));
+    tag->value = pool->alloc(sizeof(uint8_t));
     *((uint8_t*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Short(Event_pool* pool, List* list, int8_t key_length, char* key_name, int16_t value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = SHORT;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(int16_t));
+    tag->value = pool->alloc(sizeof(int16_t));
     *((int16_t*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Integer(Event_pool* pool, List* list, int8_t key_length, char* key_name, int32_t value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = INTEGER;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(int32_t));
+    tag->value = pool->alloc(sizeof(int32_t));
     *((int32_t*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Long(Event_pool* pool, List* list, int8_t key_length, char* key_name, int64_t value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = LONG;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(int64_t));
+    tag->value = pool->alloc(sizeof(int64_t));
     *((int64_t*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Flag(Event_pool* pool, List* list, int8_t key_length, char* key_name, char value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLAG;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(char));
+    tag->value = pool->alloc(sizeof(char));
     *((char*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Float(Event_pool* pool, List* list, int8_t key_length, char* key_name, float value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = FLOAT;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(float));
+    tag->value = pool->alloc(sizeof(float));
     *((float*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Double(Event_pool* pool, List* list, int8_t key_length, char* key_name, double value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = DOUBLE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(double));
+    tag->value = pool->alloc(sizeof(double));
     *((double*) tag->value) = value;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_String(Event_pool* pool, List* list, int8_t key_length, char* key_name, char* value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = STRING;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
     uint64_t size_of_value = strlen(value);
-    tag->value = malloc(sizeof(char) * (size_of_value + 1));
+    tag->value = pool->alloc(sizeof(char) * (size_of_value + 1));
     strcpy(tag->value, value);
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_UUID(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t* value){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = UUID;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(uint8_t) * 16);
+    tag->value = pool->alloc(sizeof(uint8_t) * 16);
     memcpy((uint8_t*) tag->value, value, 16);
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Null(List* list, int8_t key_length, char* key_name){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Null(Event_pool* pool, List* list, int8_t key_length, char* key_name){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = NULL_TYPE;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
     tag->value = NULL;
-    list_append(list, tag);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Vector(Event_pool* pool, List* list, enum DataType datatype, int8_t key_length, char* key_name){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = VECTOR;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = malloc(sizeof(Vector));
+    tag->value = pool->alloc(sizeof(Vector));
     ((Vector*) tag->value)->datatype = datatype;
-    ((Vector*) tag->value)->values = list_create();
-    list_append(list, tag);
+    ((Vector*) tag->value)->values = list_create(pool);
+    list_append(pool, list, tag);
     return tag;
 }
 
-Tag* container_add_tag_Container(List* list, int8_t key_length, char* key_name){
-    Tag* tag = malloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
+Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length, char* key_name){
+    Tag* tag = pool->alloc(sizeof(Tag) + (sizeof(char) * (key_length + 1)));
     tag->datatype = CONTAINER;
     tag->key.length = key_length;
     strcpy(tag->key.value, key_name);
-    tag->value = list_create();
-    list_append(list, tag);
+    tag->value = list_create(pool);
+    list_append(pool, list, tag);
     return tag;
 }
 
 char* event_to_bin(Event* event, size_t* binary_size){
-    size_t* binary_max_size = malloc(sizeof(size_t));
+    size_t* binary_max_size = event->pool->alloc(sizeof(size_t));
     *binary_max_size = 1024 * 8;
-    char* binary_string = malloc(sizeof(char) * *binary_max_size);
+    char* binary_string = event->pool->alloc(sizeof(char) * *binary_max_size);
     *binary_size = 0;
     // Version
     pack_be_uint8(event->version, binary_string, binary_size, binary_max_size);
@@ -281,12 +280,12 @@ char* event_to_bin(Event* event, size_t* binary_size){
     pack_be_uint8_array(event->UUID, 16, binary_string, binary_size, binary_max_size);
     // Payload
     // Container
-    binary_string = container_to_bin(event->payload, binary_string, binary_size, binary_max_size);
-    free(binary_max_size);
+    binary_string = container_to_bin(event->pool, event->payload, binary_string, binary_size, binary_max_size);
+    event->pool->free(binary_max_size);
     return binary_string;
 }
 
-char* container_to_bin(List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size){
+char* container_to_bin(Event_pool* pool, List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size){
     uint16_t be_length = htobe16(container->size);
     pack_be_uint16(be_length, binary_string, binary_size, binary_max_size);
     List_element* top_el = container->el;
@@ -349,10 +348,10 @@ char* container_to_bin(List* container, char* binary_string, size_t* binary_size
             case VECTOR:
                 vector = tag_get_Vector(tag);
                 pack_be_uint8(vector->datatype, binary_string, binary_size, binary_max_size);
-                binary_string = vector_to_bin(vector, binary_string, binary_size, binary_max_size);
+                binary_string = vector_to_bin(pool, vector, binary_string, binary_size, binary_max_size);
                 break;
             case CONTAINER:
-                binary_string = container_to_bin(tag_get_Container(tag), binary_string, binary_size, binary_max_size);
+                binary_string = container_to_bin(pool, tag_get_Container(tag), binary_string, binary_size, binary_max_size);
                 break;
             default:
                 break;
@@ -362,7 +361,7 @@ char* container_to_bin(List* container, char* binary_string, size_t* binary_size
     return binary_string;
 }
 
-char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size){
+char* vector_to_bin(Event_pool* pool, Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size){
     int32_t be_length = htobe32(vector->values->size);
     pack_be_uint32(be_length, binary_string, binary_size, binary_max_size);
     List_element* el = vector->values->el;
@@ -416,10 +415,10 @@ char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, si
             case VECTOR:
                 be_vector = tag_get_Vector(el);
                 pack_be_uint8(be_vector->datatype, binary_string, binary_size, binary_max_size);
-                binary_string = vector_to_bin(be_vector, binary_string, binary_size, binary_max_size);
+                binary_string = vector_to_bin(pool, be_vector, binary_string, binary_size, binary_max_size);
                 break;
             case CONTAINER:
-                binary_string = container_to_bin(tag_get_Container(el), binary_string, binary_size, binary_max_size);
+                binary_string = container_to_bin(pool, tag_get_Container(el), binary_string, binary_size, binary_max_size);
                 break;
             default:
                 break;
@@ -429,70 +428,70 @@ char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, si
     return binary_string;
 }
 
-void vector_add_Byte(Vector* vector, uint8_t value){
-    uint8_t* v_byte = malloc(sizeof(uint8_t));
+void vector_add_Byte(Event_pool* pool, Vector* vector, uint8_t value){
+    uint8_t* v_byte = pool->alloc(sizeof(uint8_t));
     *v_byte = value;
-    list_append(vector->values, v_byte);
+    list_append(pool, vector->values, v_byte);
 }
 
-void vector_add_Short(Vector* vector, int16_t value){
-    int16_t* v_short = malloc(sizeof(int16_t));
+void vector_add_Short(Event_pool* pool, Vector* vector, int16_t value){
+    int16_t* v_short = pool->alloc(sizeof(int16_t));
     *v_short = value;
-    list_append(vector->values, v_short);
+    list_append(pool, vector->values, v_short);
 }
 
-void vector_add_Integer(Vector* vector, int32_t value){
-    int32_t* v_integer = malloc(sizeof(int32_t));
+void vector_add_Integer(Event_pool* pool, Vector* vector, int32_t value){
+    int32_t* v_integer = pool->alloc(sizeof(int32_t));
     *v_integer = value;
-    list_append(vector->values, v_integer);
+    list_append(pool, vector->values, v_integer);
 }
 
-void vector_add_Long(Vector* vector, int64_t value){
-    int64_t* v_long = malloc(sizeof(int64_t));
+void vector_add_Long(Event_pool* pool, Vector* vector, int64_t value){
+    int64_t* v_long = pool->alloc(sizeof(int64_t));
     *v_long = value;
-    list_append(vector->values, v_long);
+    list_append(pool, vector->values, v_long);
 }
 
-void vector_add_Flag(Vector* vector, char value){
-    char* v_flag = malloc(sizeof(char));
+void vector_add_Flag(Event_pool* pool, Vector* vector, char value){
+    char* v_flag = pool->alloc(sizeof(char));
     *v_flag = value;
-    list_append(vector->values, v_flag);
+    list_append(pool, vector->values, v_flag);
 }
 
-void vector_add_Float(Vector* vector, float value){
-    float* v_float = malloc(sizeof(float));
+void vector_add_Float(Event_pool* pool, Vector* vector, float value){
+    float* v_float = pool->alloc(sizeof(float));
     *v_float = value;
-    list_append(vector->values, v_float);
+    list_append(pool, vector->values, v_float);
 }
 
-void vector_add_Double(Vector* vector, double value){
-    double* v_double = malloc(sizeof(double));
+void vector_add_Double(Event_pool* pool, Vector* vector, double value){
+    double* v_double = pool->alloc(sizeof(double));
     *v_double = value;
-    list_append(vector->values, v_double);
+    list_append(pool, vector->values, v_double);
 }
 
-void vector_add_String(Vector* vector, char* value){
-    char* v_string = malloc(sizeof(char) * strlen(value));
+void vector_add_String(Event_pool* pool, Vector* vector, char* value){
+    char* v_string = pool->alloc(sizeof(char) * strlen(value));
     strcpy(v_string, value);
-    list_append(vector->values, v_string);
+    list_append(pool, vector->values, v_string);
 }
 
-void vector_add_UUID(Vector* vector, uint8_t* value){
-    uint8_t* v_uuid = malloc(sizeof(uint8_t) * 16);
+void vector_add_UUID(Event_pool* pool, Vector* vector, uint8_t* value){
+    uint8_t* v_uuid = pool->alloc(sizeof(uint8_t) * 16);
     memcpy(v_uuid, value, 16);
-    list_append(vector->values, v_uuid);
+    list_append(pool, vector->values, v_uuid);
 }
 
-Vector* vector_add_Vector(Vector* vector, enum DataType datatype){
-    Vector* v_vector = malloc(sizeof(Vector));
+Vector* vector_add_Vector(Event_pool* pool, Vector* vector, enum DataType datatype){
+    Vector* v_vector = pool->alloc(sizeof(Vector));
     v_vector->datatype = datatype;
-    v_vector->values = list_create();
-    list_append(vector->values, v_vector);
+    v_vector->values = list_create(pool);
+    list_append(pool, vector->values, v_vector);
     return v_vector;
 }
 
-List* vector_add_Container(Vector* vector){
-    List* v_container = list_create();
-    list_append(vector->values, v_container);
+List* vector_add_Container(Event_pool* pool, Vector* vector){
+    List* v_container = list_create(pool);
+    list_append(pool, vector->values, v_container);
     return v_container;
 }

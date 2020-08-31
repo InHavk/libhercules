@@ -2,7 +2,7 @@
 #define __OBJECT_INCLUDED
 
 #include "list.h"
-#include <stdint.h>
+#include "pool.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -94,44 +94,50 @@ typedef struct {
 } Vector;
 
 typedef struct event {
+    Event_pool* pool;
     uint8_t version;
     uint64_t timestamp;
     uint8_t UUID[16];
     List* payload;
 } Event;
 
+typedef struct event_binary {
+    size_t size;
+    char value[];
+} Event_binary;
+
 uint64_t generate_current_timestamp();
 void generate_uuid_v4(uint8_t* uuid);
-Event* event_create(uint8_t version, uint64_t timestamp, uint8_t* uuid);
+Event* event_create(Event_pool* pool, uint8_t version, uint64_t timestamp, uint8_t* uuid);
 void event_free(Event* event);
-void container_free(List* container);
-void vector_free(Vector* vector);
-Event* create_event();
+void container_free(Event_pool* pool, List* container);
+void vector_free(Event_pool* pool, Vector* vector);
+Event* create_event(Event_pool* pool);
 Tag* container_find_tag(List* list, int8_t key_length, char* key_name);
-Tag* container_add_tag_Byte(List* list, int8_t key_length, char* key_name, uint8_t value);
-Tag* container_add_tag_Short(List* list, int8_t key_length, char* key_name, int16_t value);
-Tag* container_add_tag_Integer(List* list, int8_t key_length, char* key_name, int32_t value);
-Tag* container_add_tag_Long(List* list, int8_t key_length, char* key_name, int64_t value);
-Tag* container_add_tag_Flag(List* list, int8_t key_length, char* key_name, char value);
-Tag* container_add_tag_Float(List* list, int8_t key_length, char* key_name, float value);
-Tag* container_add_tag_Double(List* list, int8_t key_length, char* key_name, double value);
-Tag* container_add_tag_String(List* list, int8_t key_length, char* key_name, char* value);
-Tag* container_add_tag_UUID(List* list, int8_t key_length, char* key_name, uint8_t* value);
-Tag* container_add_tag_Null(List* list, int8_t key_length, char* key_name);
-Tag* container_add_tag_Vector(List* list, enum DataType datatype, int8_t key_length, char* key_name);
-Tag* container_add_tag_Container(List* list, int8_t key_length, char* key_name);
+Tag* container_add_tag_Byte(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t value);
+Tag* container_add_tag_Short(Event_pool* pool, List* list, int8_t key_length, char* key_name, int16_t value);
+Tag* container_add_tag_Integer(Event_pool* pool, List* list, int8_t key_length, char* key_name, int32_t value);
+Tag* container_add_tag_Long(Event_pool* pool, List* list, int8_t key_length, char* key_name, int64_t value);
+Tag* container_add_tag_Flag(Event_pool* pool, List* list, int8_t key_length, char* key_name, char value);
+Tag* container_add_tag_Float(Event_pool* pool, List* list, int8_t key_length, char* key_name, float value);
+Tag* container_add_tag_Double(Event_pool* pool, List* list, int8_t key_length, char* key_name, double value);
+Tag* container_add_tag_String(Event_pool* pool, List* list, int8_t key_length, char* key_name, char* value);
+Tag* container_add_tag_UUID(Event_pool* pool, List* list, int8_t key_length, char* key_name, uint8_t* value);
+Tag* container_add_tag_Null(Event_pool* pool, List* list, int8_t key_length, char* key_name);
+Tag* container_add_tag_Vector(Event_pool* pool, List* list, enum DataType datatype, int8_t key_length, char* key_name);
+Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length, char* key_name);
 char* event_to_bin(Event* event, size_t* binary_size);
-char* container_to_bin(List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size);
-char* vector_to_bin(Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size);
-void vector_add_Byte(Vector* vector, uint8_t value);
-void vector_add_Short(Vector* vector, int16_t value);
-void vector_add_Integer(Vector* vector, int32_t value);
-void vector_add_Long(Vector* vector, int64_t value);
-void vector_add_Flag(Vector* vector, char value);
-void vector_add_Float(Vector* vector, float value);
-void vector_add_Double(Vector* vector, double value);
-void vector_add_String(Vector* vector, char* value);
-void vector_add_UUID(Vector* vector, uint8_t* value);
-Vector* vector_add_Vector(Vector* vector, enum DataType datatype);
-List* vector_add_Container(Vector* vector);
+char* container_to_bin(Event_pool* pool, List* container, char* binary_string, size_t* binary_size, size_t* binary_max_size);
+char* vector_to_bin(Event_pool* pool, Vector* vector, char* binary_string, size_t* binary_size, size_t* binary_max_size);
+void vector_add_Byte(Event_pool* pool, Vector* vector, uint8_t value);
+void vector_add_Short(Event_pool* pool, Vector* vector, int16_t value);
+void vector_add_Integer(Event_pool* pool, Vector* vector, int32_t value);
+void vector_add_Long(Event_pool* pool, Vector* vector, int64_t value);
+void vector_add_Flag(Event_pool* pool, Vector* vector, char value);
+void vector_add_Float(Event_pool* pool, Vector* vector, float value);
+void vector_add_Double(Event_pool* pool, Vector* vector, double value);
+void vector_add_String(Event_pool* pool, Vector* vector, char* value);
+void vector_add_UUID(Event_pool* pool, Vector* vector, uint8_t* value);
+Vector* vector_add_Vector(Event_pool* pool, Vector* vector, enum DataType datatype);
+List* vector_add_Container(Event_pool* pool, Vector* vector);
 #endif

@@ -4,7 +4,7 @@ MKDIR = mkdir -p
 TARGET_EXTENSION=out
 
 .PHONY: all
-all: clean BUILD_PATHS test so
+all: clean BUILD_PATHS test
 
 PATHU = libs/unity/src/
 PATHS = src/
@@ -15,20 +15,30 @@ PATHD = build/depends/
 PATHO = build/objs/
 PATHR = build/results/
 
-SRCT = $(wildcard $(PATHT)*.c)
+SRCST = $(wildcard $(PATHT)*.c)
+SRCSP = $(wildcard $(PATHS)pool*.c)
+SRCSL = $(wildcard $(PATHL)*.c)
+SRCSS = $(wildcard $(PATHS)*.c)
 
 COMPILE=gcc -g -c
 LINK=gcc
 DEPEND=gcc -MM -MG -MF
 CFLAGS=-I. -I$(PATHU) -I$(PATHS) -I$(PATHL) -DTEST -fPIC
 
-RESULTS = $(patsubst $(PATHT)Test%.c,$(PATHR)Test%.txt,$(SRCT) )
-
 PASSED = `grep -s PASS $(PATHR)*.txt`
 FAIL = `grep -s FAIL $(PATHR)*.txt`
 IGNORE = `grep -s IGNORE $(PATHR)*.txt`
 
-test: $(BUILD_PATHS) $(RESULTS)
+test: $(SRCST) $(SRCSP) $(SRCSL) $(SRCSS)
+	$(BUILD_PATHS)
+	$(COMPILE) $(CFLAGS) $(PATHL)list.c               -o $(PATHO)list.o
+	$(COMPILE) $(CFLAGS) $(PATHS)pool.c               -o $(PATHO)pool.o
+	$(COMPILE) $(CFLAGS) $(PATHS)pool/simple_pool.c   -o $(PATHO)simple_pool.o
+	$(COMPILE) $(CFLAGS) $(PATHS)libhercules.c        -o $(PATHO)libhercules.o
+	$(COMPILE) $(CFLAGS) $(PATHU)unity.c              -o $(PATHU)unity.o
+	$(COMPILE) $(CFLAGS) $(PATHT)Testlibhercules.c    -o $(PATHO)Testlibhercules.o
+	$(LINK) -o $(PATHO)Testlibhercules.out $(PATHO)list.o $(PATHO)pool.o $(PATHO)simple_pool.o $(PATHO)libhercules.o $(PATHU)unity.o $(PATHO)Testlibhercules.o
+	./$(PATHO)Testlibhercules.out > $(PATHR)Testlibhercules.txt 2>&1
 	@echo "-----------------------\nIGNORES:\n-----------------------"
 	@echo "$(IGNORE)"
 	@echo "-----------------------\nFAILURES:\n-----------------------"
@@ -36,27 +46,6 @@ test: $(BUILD_PATHS) $(RESULTS)
 	@echo "-----------------------\nPASSED:\n-----------------------"
 	@echo "$(PASSED)"
 	@echo "\nDONE"
-
-$(PATHR)Test%.txt: $(PATHB)%.$(TARGET_EXTENSION)
-	-./$< > $@ 2>&1
-
-$(PATHB)%.$(TARGET_EXTENSION): $(PATHO)Test%.o $(PATHO)%.o $(PATHU)unity.o $(PATHL)list.o #$(wildcard $(PATHD)*.o) #$(PATHD)Test%.d
-	$(LINK) -o $@ $^
-
-$(PATHO)%.o:: $(PATHT)%.c
-	$(COMPILE) $(CFLAGS) $< -o $@
-
-$(PATHO)%.o:: $(PATHS)%.c
-	$(COMPILE) $(CFLAGS) $< -o $@
-
-$(PATHO)%.o:: $(PATHU)%.c $(PATHU)%.h
-	$(COMPILE) $(CFLAGS) $< -o $@
-
-$(PATHD)%.o:: $(PATHL)%.c
-	$(COMPILE) $(CFLAGS) $< -o $@
-
-$(PATHD)%.d:: $(PATHT)%.c
-	$(DEPEND) $@ $<
 
 BUILD_PATHS:
 	$(MKDIR) $(PATHB) $(PATHD) $(PATHO) $(PATHR)
@@ -70,13 +59,13 @@ clean:
 	$(CLEANUP) $(PATHD)*.d
 	$(CLEANUP) $(PATHD)*.o
 
-so:
-	$(LINK) libs/list.o $(PATHO)libhercules.o -shared -o build/libhercules.so
+#so:
+#	$(LINK) libs/list.o $(PATHO)libhercules.o -shared -o build/libhercules.so
+#
+#static:	$(PATHB)libhercules.a
 
-static:	$(PATHB)libhercules.a
-
-$(PATHB)libhercules.a: libs/list.o $(PATHO)libhercules.o
-	ar rcs $@ $^
+#$(PATHB)libhercules.a: libs/list.o $(PATHO)libhercules.o
+#	ar rcs $@ $^
 
 .PRECIOUS: $(PATHB)Test%.$(TARGET_EXTENSION)
 .PRECIOUS: $(PATHD)%.d

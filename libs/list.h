@@ -2,6 +2,7 @@
 #ifndef __LIST_INCLUDED
 #define __LIST_INCLUDED
 #include <stddef.h>
+#include "pool.h"
 
 typedef struct list_element {
     struct list_element* previous;
@@ -14,10 +15,10 @@ typedef struct {
     List_element* el;
 } List;
 
-List* list_create();
+List* list_create(Event_pool* pool);
 size_t list_size(List* list);
 List_element* list_get_latest(List* list);
-void list_append(List* list, void* value);
-void list_delete_latest(List* list);
-void list_free(List* list);
+void list_append(Event_pool* pool, List* list, void* value);
+void list_delete_latest(Event_pool* pool, List* list);
+void list_free(Event_pool* pool, List* list);
 #endif
