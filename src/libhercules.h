@@ -25,6 +25,9 @@
 #define try_realloc_binary_string(pool, req_size, event_binary, binary_max_size) \
   while(*binary_max_size - event_binary->size < (size_t) req_size){\
     *binary_max_size *= 2; \
+    if(*binary_max_size - event_binary->size < (size_t) req_size){ \
+      continue; \
+    } \
     event_binary = pool->realloc(pool, event_binary, sizeof(Event_binary) + (sizeof(char) * *binary_max_size), sizeof(Event_binary) + (sizeof(char) * event_binary->size)); \
   }
 
