@@ -13,6 +13,7 @@ typedef struct list_element {
 typedef struct {
     size_t size;
     List_element* el;
+    List_element* latest;
 } List;
 
 List* list_create(Event_pool* pool);

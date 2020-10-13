@@ -6,6 +6,7 @@ List* list_create(Event_pool* pool){
     List* list = pool->alloc(pool, sizeof(List));
     list->size = 0;
     list->el = NULL;
+    list->latest = NULL;
     return list;
 }
 
@@ -17,11 +18,7 @@ List_element* list_get_latest(List* list){
     if(list->el == NULL){
         return NULL;
     } else {
-        List_element* element = list->el;
-        while(element->next != NULL){
-            element = element->next;
-        }
-        return element;
+        return list->latest;
     }
     
 }
@@ -38,6 +35,7 @@ void list_append(Event_pool* pool, List* list, void* value){
         new_el->previous = latest;
         new_el->previous->next = new_el;
     }
+    list->latest = new_el;
     list->size++;
 }
 
@@ -47,6 +45,7 @@ void list_delete_latest(Event_pool* pool, List* list){
         pool->free(pool, latest->value);
         if(latest->previous != NULL){
             latest->previous->next = NULL;
+            list->latest = latest->previous;
         }
         list->size--;
         pool->free(pool, latest);
