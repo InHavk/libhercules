@@ -268,7 +268,7 @@ Tag* container_add_tag_Container(Event_pool* pool, List* list, int8_t key_length
 
 Event_binary* event_to_bin(Event* event){
     size_t* binary_max_size = event->pool->alloc(event->pool, sizeof(size_t));
-    *binary_max_size = 1024 * 8;
+    *binary_max_size = DEFAULT_SIZE_OF_EVENT_BINARY_POOL;
     Event_binary* event_binary = event->pool->alloc(event->pool, sizeof(Event_binary) + (sizeof(char) * *binary_max_size));
     event_binary->size = 0;
 
