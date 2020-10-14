@@ -10,6 +10,8 @@
 #include <endian.h>
 #include <inttypes.h>
 
+#define DEFAULT_SIZE_OF_EVENT_BINARY_POOL 1024 * 64
+
 #define tag_get_Byte(tag) (*((uint8_t*) tag->value))
 #define tag_get_Short(tag) (*((int16_t*) tag->value))
 #define tag_get_Integer(tag) (*((int32_t*) tag->value))
