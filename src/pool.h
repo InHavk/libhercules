@@ -12,9 +12,10 @@ typedef struct event_pool {
     void  (*init)(struct event_pool*, void*);
     void  (*destroy)(struct event_pool*);
     void*  pool;
+    void*  optional;
 } Event_pool;
 
-void pool_init(Event_pool* pool);
+void pool_init(Event_pool* pool, void* args);
 void pool_destroy(Event_pool* pool);
 void* event_pool_alloc(Event_pool* pool, size_t size);
 void* event_pool_realloc(Event_pool* pool, void* obj, size_t size, size_t prev_size);
