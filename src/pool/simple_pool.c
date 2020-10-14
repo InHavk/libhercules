@@ -12,7 +12,7 @@ void  event_pool_free(Event_pool* pool, void* obj){
 void  event_pool_force_free(Event_pool* pool, void* obj){
     free(obj);
 }
-void  event_pool_init(struct event_pool* pool){
+void  event_pool_init(struct event_pool* pool, void* args){
 
 }
 void  event_pool_destroy(struct event_pool* pool){
