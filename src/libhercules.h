@@ -113,6 +113,7 @@ typedef struct event_binary {
 
 uint64_t generate_current_timestamp();
 void generate_uuid_v4(uint8_t* uuid);
+void prepare_uuid_v4(uint8_t* uuid, uint8_t* random);
 Event* event_create(Event_pool* pool, uint8_t version, uint64_t timestamp, uint8_t* uuid);
 void event_free(Event* event);
 void container_free(Event_pool* pool, List* container);

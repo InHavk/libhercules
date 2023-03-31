@@ -22,6 +22,12 @@ void generate_uuid_v4(uint8_t* uuid) {
     uuid[15] = rand() % 256;
 }
 
+void prepare_uuid_v4(uint8_t* uuid, uint8_t* random) {
+    memcpy(uuid, random, 16);
+    uuid[6] = (uuid[6] & 0x0F) | 0x40;
+    uuid[8] = (uuid[8] & 0x3F) | 0x80;
+}
+
 uint64_t generate_current_timestamp() {
     struct timespec t;
     clock_gettime(CLOCK_REALTIME, &t);
