@@ -31,7 +31,7 @@ void prepare_uuid_v4(uint8_t* uuid, uint8_t* random) {
 uint64_t generate_current_timestamp() {
     struct timespec t;
     clock_gettime(CLOCK_REALTIME, &t);
-    uint64_t timestamp = (t.tv_sec * 10000000) + (t.tv_nsec / 1000);
+    uint64_t timestamp = (t.tv_sec * 1000000) + (t.tv_nsec / 1000);
     return timestamp;
 }
 
